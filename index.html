@@ -528,31 +528,31 @@ function listenRoom(){
         playersEl.addEventListener('mouseleave', cancelPress);
     }
 
-function triggerFireworks() {
-  const duration = 5000; // 5 ثواني
-  const animationEnd = Date.now() + duration;
-  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
+   function triggerFireworks() {
+      const duration = 5000; 
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
 
-  function randomInRange(min, max) {
-    return Math.random() * (max - min) + min;
-  }
+ function randomInRange(min, max) {
+     return Math.random() * (max - min) + min;
+   }
 
-  const interval = setInterval(function() {
+    const interval = setInterval(function() {
     const timeLeft = animationEnd - Date.now();
 
     if (timeLeft <= 0) {
       return clearInterval(interval);
     }
 
-    // 🚀 صاروخ يطلع من تحت ويتفرقع
+    // 🚀 صاروخ من تحت
     confetti({
       ...defaults,
       particleCount: 40,
-      origin: { x: Math.random(), y: 1 }, // من أسفل الشاشة
+      origin: { x: randomInRange(0.2, 0.8), y: 1 },
       colors: ['#ff0000', '#ffff00', '#00ffcc', '#3399ff', '#ff66cc']
     });
 
-    // 🎇 بعض الشرارات الجانبية
+    // 🎇 شرارات جانبية
     confetti({
       ...defaults,
       particleCount: 10,
@@ -560,31 +560,9 @@ function triggerFireworks() {
       spread: 100,
       origin: { x: randomInRange(0.2, 0.8), y: Math.random() - 0.2 }
     });
-  }, 300); // كل 300ms
+  }, 300);
 }
 
-  let frame = 0;
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      p.x += Math.cos(p.angle) * p.speed;
-      p.y += Math.sin(p.angle) * p.speed;
-      p.alpha -= p.decay;
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = Math.max(p.alpha, 0);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    frame++;
-    if (frame < 180) { // حوالي 3 ثواني (60fps × 3)
-      requestAnimationFrame(animate);
-    } else {
-      document.body.removeChild(canvas);
-    }
-  }
-  animate();
-}
 
 
 

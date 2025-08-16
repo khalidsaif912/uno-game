@@ -152,7 +152,7 @@
 <body>
   <div class="wrap">
     <div class="header" id="roomBanner">
-      <img src="./banner.jpg" alt="UNO Live Banner" class="banner-img">
+      <img id="bannerImage" src="./banner.jpg" alt="UNO Live Banner" class="banner-img">
       <div class="title">
         <span>🎮</span>
         <span class="badge" id="roomStatus"></span>
@@ -180,6 +180,20 @@
       const randomIndex = Math.floor(Math.random() * imageCount) + 1;
       const imageUrl = `./background${randomIndex}.jpg`;
       document.body.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    function setRandomBanner() {
+      const bannerCount = 4; // عدد صور البنر الحالي
+      const randomIndex = Math.floor(Math.random() * bannerCount);
+      let bannerUrl;
+      
+      if (randomIndex === 0) {
+        bannerUrl = './banner.jpg'; // البنر الأساسي
+      } else {
+        bannerUrl = `./banner${randomIndex}.jpg`; // البنرات المرقمة
+      }
+      
+      document.getElementById('bannerImage').src = bannerUrl;
     }
 
     // دالة لتحويل لون hex إلى rgba
@@ -487,6 +501,7 @@
 
     (async function boot(){
       setRandomBackground();
+      setRandomBanner();
       if(!roomId){
         roomStatus.textContent = 'غير متصل';
         document.getElementById('addPlayerFab').style.display = 'none';

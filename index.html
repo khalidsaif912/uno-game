@@ -528,7 +528,7 @@ function listenRoom(){
     }
 
     // 🚀 صاروخ من تحت
-    confetti({
+    window.confetti({
       ...defaults,
       particleCount: 40,
       origin: { x: randomInRange(0.2, 0.8), y: 1 },
@@ -536,7 +536,7 @@ function listenRoom(){
     });
 
     // 🎇 شرارات جانبية
-    confetti({
+    window.confetti({
       ...defaults,
       particleCount: 10,
       startVelocity: 50,

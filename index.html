@@ -531,29 +531,37 @@ function listenRoom(){
 function triggerFireworks() {
   const duration = 5000; // 5 ثواني
   const animationEnd = Date.now() + duration;
-  const colors = ['#ff0', '#ff6600', '#00ffcc', '#ff0066', '#00ff00', '#3399ff'];
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
 
-  (function frame() {
-    // لو انتهى الوقت وقف
-    if (Date.now() > animationEnd) return;
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
-    // توليد دفعة عشوائية من الشرارات
+  const interval = setInterval(function() {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    // 🚀 صاروخ يطلع من تحت ويتفرقع
     confetti({
-      particleCount: 5 + Math.random() * 10,
-      startVelocity: 20 + Math.random() * 15,
-      spread: 360,
-      origin: {
-        x: Math.random(),
-        y: Math.random() - 0.2
-      },
-      colors: [colors[Math.floor(Math.random() * colors.length)]],
+      ...defaults,
+      particleCount: 40,
+      origin: { x: Math.random(), y: 1 }, // من أسفل الشاشة
+      colors: ['#ff0000', '#ffff00', '#00ffcc', '#3399ff', '#ff66cc']
     });
 
-    // كرر بسرعة (كل 200ms)
-    requestAnimationFrame(frame);
-  }());
+    // 🎇 بعض الشرارات الجانبية
+    confetti({
+      ...defaults,
+      particleCount: 10,
+      startVelocity: 50,
+      spread: 100,
+      origin: { x: randomInRange(0.2, 0.8), y: Math.random() - 0.2 }
+    });
+  }, 300); // كل 300ms
 }
-
 
   let frame = 0;
   function animate() {

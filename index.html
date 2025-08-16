@@ -562,7 +562,32 @@ function listenRoom(){
       }
       initializeEventListeners();
     })();
-  </script>
+   </script>
+
+  <!-- 🔽 النوافذ (modals) هنا -->
+  <div class="modal-backdrop" id="roomModal">
+    <div class="modal">
+      <h3>إعدادات الغرفة</h3>
+      <div id="roomManagementView">
+        <div id="roomInfoBlock">رمز الغرفة: <span id="modalRoomId"></span></div>
+        <button id="openLog">📒 عرض السجل</button>
+        <button id="copyLinkBtn">🔗 نسخ الرابط</button>
+      </div>
+
+      <div id="joinView" style="display:none;">
+        <input type="text" id="joinId" placeholder="أدخل رمز الغرفة">
+        <button id="doJoin">دخول</button>
+        <button id="backToManagement">رجوع</button>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <button id="doCreate">➕ إنشاء غرفة جديدة</button>
+      </div>
+
+      <button id="closeRoomModal">إغلاق</button>
+    </div>
+  </div>
+  <!-- 🔼 انتهى كود النوافذ -->
+
 </body>
 </html>
-

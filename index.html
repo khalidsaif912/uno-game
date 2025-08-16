@@ -529,30 +529,31 @@ function listenRoom(){
     }
 
 function triggerFireworks() {
-  const canvas = document.createElement("canvas");
-  canvas.style.position = "fixed";
-  canvas.style.inset = "0";
-  canvas.style.pointerEvents = "none";
-  canvas.style.zIndex = "9999";
-  document.body.appendChild(canvas);
+  const duration = 5000; // 5 ثواني
+  const animationEnd = Date.now() + duration;
+  const colors = ['#ff0', '#ff6600', '#00ffcc', '#ff0066', '#00ff00', '#3399ff'];
 
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  (function frame() {
+    // لو انتهى الوقت وقف
+    if (Date.now() > animationEnd) return;
 
-  const particles = [];
-  for (let i = 0; i < 120; i++) { // عدد أكبر من الشرارات
-    particles.push({
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      angle: Math.random() * Math.PI * 2,
-      speed: Math.random() * 6 + 2,
-      radius: Math.random() * 3 + 2,
-      alpha: 1,
-      decay: 0.005 + Math.random() * 0.01, // أبطأ في الاختفاء
-      color: `hsl(${Math.random() * 360}, 100%, 50%)`
+    // توليد دفعة عشوائية من الشرارات
+    confetti({
+      particleCount: 5 + Math.random() * 10,
+      startVelocity: 20 + Math.random() * 15,
+      spread: 360,
+      origin: {
+        x: Math.random(),
+        y: Math.random() - 0.2
+      },
+      colors: [colors[Math.floor(Math.random() * colors.length)]],
     });
-  }
+
+    // كرر بسرعة (كل 200ms)
+    requestAnimationFrame(frame);
+  }());
+}
+
 
   let frame = 0;
   function animate() {

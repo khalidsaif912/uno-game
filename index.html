@@ -227,10 +227,22 @@
     const modalRoomId = document.getElementById("modalRoomId");
     let currentTargetPlayerId = null;
 
-    const medalSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
-    const cupSound = new Audio('https://cdn.pixabay.com/audio/2022/01/18/audio_e58f83286a.mp3');
+    const medalSound = new Audio('./medal.mp3'); 
+    medalSound.preload = "auto";
+
+    const cupSound = new Audio('./cup.mp3'); 
+    cupSound.preload = "auto";
+
     medalSound.volume = 0.5;
     cupSound.volume = 0.6;
+
+    // تجهيز الصوت عشان يشتغل في الجوال بدون حظر
+   document.body.addEventListener("click", () => {
+   medalSound.play().catch(()=>{});
+   cupSound.play().catch(()=>{});
+   }, { once: true });
+
+
 
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];
     const CARD_COLORS = ["#8e44ad", "#e67e22", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#16a085"];

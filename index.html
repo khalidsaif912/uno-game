@@ -226,7 +226,9 @@
     const roomStatus = document.getElementById("roomStatus");
     const modalRoomId = document.getElementById("modalRoomId");
     let currentTargetPlayerId = null;
-
+    
+   let lastCups = {};
+    
     const medalSound = new Audio('./medal.mp3'); 
     medalSound.preload = "auto";
 
@@ -292,18 +294,29 @@
       playersEl.innerHTML = list.map((p, i) => playerCard(p, i)).join("");
     }
 
-    function listenRoom(){
-      if(!roomId) return;
-      roomStatus.textContent = isAdmin ? 'مشرف' : 'مشاهد';
-      modalRoomId.textContent = roomId;
-      localStorage.setItem("uno-room-id", roomId);
-      onValue(ref(db, `rooms/${roomId}/players`), (snap) => {
-        const playersData = snap.exists() ? snap.val() : {};
-        const players = Object.entries(playersData).map(([id,v])=>({id, ...v}));
-        players.sort((a,b)=> (b.right||0)-(a.right||0) || (b.left||0)-(a.left||0));
-        renderPlayers(players);
-      });
-    }
+function listenRoom(){
+  if(!roomId) return;
+  roomStatus.textContent = isAdmin ? 'مشرف' : 'مشاهد';
+  modalRoomId.textContent = roomId;
+  localStorage.setItem("uno-room-id", roomId);
+
+  onValue(ref(db, `rooms/${roomId}/players`), (snap) => {
+    const playersData = snap.exists() ? snap.val() : {};
+    const players = Object.entries(playersData).map(([id,v])=>({id, ...v}));
+    players.sort((a,b)=> (b.right||0)-(a.right||0) || (b.left||0)-(a.left||0));
+    renderPlayers(players);
+
+    // 🔥 مراقبة الكؤوس وإطلاق الألعاب النارية
+    players.forEach(p => {
+      const prev = lastCups[p.id] || 0;
+      if ((p.right || 0) > prev) {
+        triggerFireworks(); // 🎆 تظهر عند الجميع
+      }
+      lastCups[p.id] = p.right || 0;
+    });
+  });
+}
+
 
     async function ensureAdminStatus(){
       if(!roomId || !adminToken) {

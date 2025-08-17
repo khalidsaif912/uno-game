@@ -5,60 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UNO Live – by Mr.K</title>
   <style>
+    /* --- التنسيقات الأساسية --- */
     :root {
       --bg:#0f1220; --card-bg:#171a2b; --text:#e8ecff; --muted:#9aa3c7; --accent:#7aa2ff;
     }
     * { box-sizing: border-box; }
-    html, body {
-        margin: 0;
-        padding: 0;
-    }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: var(--text);
-      /* --- التعديل الرئيسي هنا --- */
-      /* تم حذف خصائص الخلفية القديمة */
-      background-attachment: fixed; /* نحافظ على هذه الخاصية لتثبيت التدرج */
-      transition: background 0.5s ease; /* إضافة انتقال ناعم عند تغيير الخلفية */
+      /* سيتم تعيين الخلفية عبر جافاسكريبت */
+      background-color: #333; /* لون احتياطي في حال لم تحمل الصورة */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
     .wrap { max-width: 600px; margin: 0 auto; padding: 16px; padding-bottom: 100px; }
     .header {
-      display:flex; flex-direction: column; align-items:center; justify-content:center; gap: 0;
+      display:flex; flex-direction: column; align-items:center; justify-content:center; gap:12px; flex-wrap: wrap;
       background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(10px);
-      border:1px solid rgba(255,255,255,0.1); padding: 12px 14px;
-      border-radius:14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25); cursor: pointer;
-      position: relative;
-      width: 100%;
-      z-index: 101;
+      border:1px solid rgba(255,255,255,0.1); padding:12px 14px; border-radius:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25); margin-bottom: 16px; cursor: pointer;
     }
     .header .banner-img {
         width: 100%;
-        max-width: 280px;
+        max-width: 300px;
         height: auto;
-    }
-    .title {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        font-weight: 800; letter-spacing:.5px; font-size: 16px;
-        display:flex; align-items:center; gap:8px;
-        background: rgba(0,0,0,0.4);
-        padding: 4px 8px;
+        margin-bottom: 10px;
         border-radius: 8px;
     }
-    .title .badge { font-size: 11px; color: var(--text); background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 999px; }
-    .grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
+    .title { font-weight: 800; letter-spacing:.5px; font-size: 20px; display:flex; align-items:center; gap:10px; }
+    .title .badge { font-size: 12px; color: var(--text); background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 999px; }
+    .grid { display: flex; flex-direction: column; gap: 12px; }
     .card {
-      border-radius:16px; padding:16px;
+      background:var(--card-bg); border-radius:16px; padding:16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       position: relative; user-select: none;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 1;
     }
     .card-body {
         display: grid;
@@ -85,8 +66,7 @@
     }
     .arrow-group { display: flex; flex-direction: column; gap: 6px; }
     .arrow {
-        width: 40px; height: 40px;
-        display:grid; place-items:center;
+        width: 40px; height: 40px; display:grid; place-items:center;
         border-radius:8px; background:rgba(255,255,255,0.1);
         border: 1px solid rgba(255,255,255,0.15);
         user-select:none; cursor: pointer; font-size: 20px;
@@ -97,13 +77,13 @@
     .name {
         margin-top:8px;
         font-weight:bold;
-        font-size:18px;
+        font-size:20px;
         direction: ltr;
         text-align: center;
         unicode-bidi: plaintext;
     }
     .badges { display:flex; justify-content:space-between; gap:8px; margin-top:12px; font-size:22px; min-height: 26px; padding: 0 10px; }
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:110; }
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:40; }
     .modal{ width:min(92vw,560px); background:#151935; border:1px solid #2a3257; border-radius:18px; padding:18px; }
     .modal h3{ margin:0 0 16px; text-align: center; }
     .input, input[type=text]{ width:100%; background:#0f142e; color:var(--text); border:1px solid #28325b; border-radius:12px; padding:10px 12px; outline:none; }
@@ -111,7 +91,7 @@
     .room-info { text-align: center; margin-bottom: 16px; background: #0f142e; padding: 10px; border-radius: 10px; border: 1px dashed #2a3257; }
     .room-info span { font-weight: bold; font-size: 18px; color: var(--accent); }
     hr { border-color: #2a32573d; margin: 16px 0; }
-    .btn {
+    .btn, .add-player-fab, .developer-info-btn {
         border-radius: 999px;
         font-weight: bold;
         border: none;
@@ -120,61 +100,40 @@
         cursor: pointer;
         padding: 10px 14px;
     }
-    .btn:hover { transform: translateY(-2px); }
+    .btn:hover, .add-player-fab:hover, .developer-info-btn:hover { transform: translateY(-2px); }
     .add-player-fab {
         position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
         background-color: #6c5ce7; color: white;
         padding: 12px 24px; font-size: 18px;
         display: flex; align-items: center; justify-content: center;
         gap: 8px; z-index: 30;
-        border-radius: 999px; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
     }
-    .add-player-fab:hover { transform: translateX(-50%) translateY(-2px); }
-    .corner-btn {
-        position: fixed;
-        bottom: 20px;
-        background: #e74c3c;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 999px;
-        z-index: 30;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        display: grid;
-        place-items: center;
-        transition: transform 0.2s ease;
+    .developer-info-btn {
+        position: fixed; bottom: 20px; left: 20px;
+        background: #e74c3c; color: white;
+        padding: 12px 24px; z-index: 30;
     }
-    .corner-btn:hover { transform: translateY(-2px); }
-    #devInfoBtn { left: 20px; }
-    #refreshBtn { right: 20px; background: #3498db; }
     .info-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .info-item a { color: var(--text); text-decoration: none; }
     .info-item a:hover { color: var(--accent); }
-    #confetti-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 100;
-        background-color: transparent;
-    }
   </style>
 </head>
 <body>
-  <canvas id="confetti-canvas"></canvas>
   <div class="wrap">
-    <div class="grid" id="players">
+    <div class="header" id="roomBanner">
+      <!-- المسار الآن مباشر وبسيط -->
+      <img src="./banner.jpg" alt="UNO Live Banner" class="banner-img">
+      <div class="title">
+        <span style="font-size: 26px;">🎮</span>
+        UNO Live
+        <span class="badge" id="roomStatus"></span>
+      </div>
     </div>
+    <div class="grid" id="players"></div>
   </div>
 
-  <button class="add-player-fab btn" id="addPlayerFab"><span>+</span> إضافة لاعب</button>
-  <button class="corner-btn btn" id="devInfoBtn">MR.K</button>
-  <button class="corner-btn btn" id="refreshBtn">تحديث</button>
+  <button class="add-player-fab" id="addPlayerFab"><span>+</span> إضافة لاعب</button>
+  <button class="developer-info-btn" id="devInfoBtn">MR.K</button>
 
   <!-- Modals -->
   <div class="modal-backdrop" id="roomModal"><div class="modal"><div id="roomManagementView"><h3>إدارة الغرفة</h3><div class="room-info" id="roomInfoBlock">رمز الغرفة الحالي: <span id="modalRoomId"></span></div><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="openLog">📜 عرض السجل</button><button class="btn" id="copyLinkBtn">🔗 نسخ رابط المشاهدة</button></div><hr><div class="row2"><button class="btn" id="doCreate">🚀 إنشاء غرفة جديدة</button><button class="btn" id="showJoinView">🚪 الانضمام لغرفة أخرى</button></div></div><div id="joinView" style="display: none;"><h3>الانضمام لغرفة</h3><div style="display:flex; gap:6px; align-items:center;"><input type="text" id="joinId" class="input" placeholder="أدخل رمز الغرفة" /><button class="btn" id="doJoin">دخول</button></div><button class="btn" id="backToManagement" style="margin-top: 10px; background: #2a3257;">رجوع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeRoomModal">إغلاق</button></div></div></div>
@@ -182,42 +141,16 @@
   <div class="modal-backdrop" id="deleteModal"><div class="modal"><h3>تأكيد الحذف</h3><p>هل أنت متأكد من الإجراء؟</p><div class="row2"><button class="btn" id="deletePlayerBtn">🗑️ حذف اللاعب المحدد</button><button class="btn" id="deleteAllBtn" style="background-color:#ff4d4f; border-color:#ff4d4f;">💥 حذف جميع اللاعبين</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDeleteModal">إلغاء</button></div></div></div>
   <div class="modal-backdrop" id="devInfoModal"><div class="modal"><h3>معلومات المطور</h3><div class="info-item"><span>🧑‍💻</span> <b>Mr.K</b></div><div class="info-item"><span>📞</span> <a href="tel:+96899678553">99678553</a><a href="https://wa.me/96899678553" target="_blank" style="font-size: 24px; margin-right: auto;">💬</a></div><div class="info-item"><span>✉️</span> <a href="mailto:scoon80@gmail.com">scoon80@gmail.com</a></div><hr><p style="text-align:center;">شكرًا لاستخدامكم التطبيق</p><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDevInfoModal">إغلاق</button></div></div></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get, child, remove } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
-    let currentBannerUrl = './banner.jpg';
-
-    // --- دالة الخلفيات الجديدة ---
-    function setRandomGradientBackground() {
-      const gradients = [
-        "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-        "linear-gradient(135deg, #13192e, #232d4b, #3e4a6d)",
-        "linear-gradient(135deg, #23074d, #cc5333)",
-        "linear-gradient(135deg, #1f1c2c, #928dab)",
-        "linear-gradient(135deg, #16222a, #3a6073)",
-        "linear-gradient(135deg, #373b44, #4286f4)",
-        "linear-gradient(135deg, #000000, #434343)",
-        "radial-gradient(circle, #2c3e50, #000000)"
-      ];
-      const randomIndex = Math.floor(Math.random() * gradients.length);
-      document.body.style.background = gradients[randomIndex];
-    }
-
-    function setRandomBanner() {
-      const bannerCount = 4;
-      const randomIndex = Math.floor(Math.random() * bannerCount);
-      currentBannerUrl = randomIndex === 0 ? './banner.jpg' : `./banner${randomIndex}.jpg`;
-      const bannerImageEl = document.getElementById('bannerImage');
-      if (bannerImageEl) {
-        bannerImageEl.src = currentBannerUrl;
-      }
-    }
-
-    function hexToRgba(hex, alpha = 1) {
-        const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
-        return `rgba(${r},${g},${b},${alpha})`;
+    function setRandomBackground() {
+      const imageCount = 8; // عدد صور الخلفية
+      const randomIndex = Math.floor(Math.random() * imageCount) + 1;
+      // المسار الآن مباشر وبسيط
+      const imageUrl = `./background${randomIndex}.jpg`;
+      document.body.style.backgroundImage = `url('${imageUrl}')`;
     }
 
     const firebaseConfig = {
@@ -239,18 +172,14 @@
     let isAdmin = false;
 
     const playersEl = document.getElementById("players");
+    const roomStatus = document.getElementById("roomStatus");
     const modalRoomId = document.getElementById("modalRoomId");
     let currentTargetPlayerId = null;
 
+    const medalSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
     const cupSound = new Audio('https://cdn.pixabay.com/audio/2022/01/18/audio_e58f83286a.mp3');
-    const fireworksSound = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c48286dec8.mp3');
-    const clickSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_746d063532.mp3');
-    const medalIncreaseSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
-
+    medalSound.volume = 0.5;
     cupSound.volume = 0.6;
-    fireworksSound.volume = 0.7;
-    clickSound.volume = 0.8;
-    medalIncreaseSound.volume = 0.5;
 
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];
     const CARD_COLORS = ["#8e44ad", "#e67e22", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#16a085"];
@@ -259,17 +188,15 @@
     const todayTag = () => new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).replace(/ /g,'').toUpperCase();
 
     function getMedals(score) {
-        const gold = Math.floor((score || 0) / 5);
-        const silver = (score || 0) % 5;
+        const gold = Math.floor((score || 0) / 3);
+        const silver = (score || 0) % 3;
         return "🥇".repeat(gold) + "🥈".repeat(silver);
     }
 
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
-      const transparentColor = hexToRgba(cardColor, 0.8);
-
       return `
-        <div class="card" data-player-id="${p.id}" style="background-color: ${transparentColor};">
+        <div class="card" data-player-id="${p.id}" style="background-color: ${cardColor};">
           <div class="card-body">
             <div class="score-area">
               <div class="arrow-group">
@@ -296,85 +223,12 @@
     }
 
     function renderPlayers(list){
-      const roomStatusText = isAdmin ? 'مشرف' : 'مشاهد';
-      const bannerHtml = `
-        <div class="header" id="roomBanner">
-          <img id="bannerImage" src="${currentBannerUrl}" alt="UNO Live Banner" class="banner-img">
-          <div class="title">
-            <span>🎮</span>
-            <span class="badge" id="roomStatus">${roomStatusText}</span>
-          </div>
-        </div>
-      `;
-
-      const playersHtml = list.map((p, i) => playerCard(p, i)).join("");
-      playersEl.innerHTML = bannerHtml + playersHtml;
-
-      document.getElementById("roomBanner").onclick = () => {
-          clickSound.play().catch(e => {});
-          roomManagementView.style.display = 'block';
-          joinView.style.display = 'none';
-          const hasRoom = !!roomId;
-          roomInfoBlock.style.display = hasRoom ? 'block' : 'none';
-          document.getElementById('openLog').style.display = hasRoom ? 'block' : 'none';
-          document.getElementById('copyLinkBtn').style.display = hasRoom ? 'block' : 'none';
-          openModal(roomModal);
-      };
-    }
-
-    function triggerFireworks(winData) {
-        const winnerColor = winData.color || '#FFFFFF';
-        fireworksSound.play().catch(e => console.log("Audio play failed:", e));
-        const canvas = document.getElementById('confetti-canvas');
-        const fire = confetti.create(canvas, {
-            resize: true,
-            useWorker: true
-        });
-
-        const duration = 5 * 1000;
-        const end = Date.now() + duration;
-
-        const bannerEl = document.getElementById('roomBanner');
-        const bannerBottom = bannerEl ? bannerEl.getBoundingClientRect().bottom : 0;
-        canvas.style.clipPath = `inset(${bannerBottom}px 0 0 0)`;
-
-        (function frame() {
-            if (Date.now() > end) {
-                canvas.style.clipPath = 'none';
-                return;
-            }
-            fire({
-                particleCount: 50,
-                angle: 90,
-                spread: 45,
-                startVelocity: 55,
-                origin: { x: Math.random(), y: 1 },
-                ticks: 150,
-                gravity: 1,
-                shapes: ['circle'],
-                scalar: 0.9,
-                colors: ['#FFFFFF', winnerColor]
-            }).then(result => {
-                if (!result) return;
-                fire({
-                    particleCount: 400,
-                    spread: 360,
-                    startVelocity: 35,
-                    origin: result.origin,
-                    gravity: 0.5,
-                    ticks: 400,
-                    decay: 0.95,
-                    shapes: ['circle'],
-                    scalar: 1.5,
-                    colors: [winnerColor, '#FFFFFF', '#FFD700']
-                });
-            });
-            setTimeout(frame, 600 + Math.random() * 400);
-        }());
+      playersEl.innerHTML = list.map((p, i) => playerCard(p, i)).join("");
     }
 
     function listenRoom(){
       if(!roomId) return;
+      roomStatus.textContent = isAdmin ? 'مشرف' : 'مشاهد';
       modalRoomId.textContent = roomId;
       localStorage.setItem("uno-room-id", roomId);
       onValue(ref(db, `rooms/${roomId}/players`), (snap) => {
@@ -382,13 +236,6 @@
         const players = Object.entries(playersData).map(([id,v])=>({id, ...v}));
         players.sort((a,b)=> (b.right||0)-(a.right||0) || (b.left||0)-(a.left||0));
         renderPlayers(players);
-      });
-      onValue(ref(db, `rooms/${roomId}/lastWin`), (snap) => {
-        if (snap.exists()) {
-            const winData = snap.val();
-            setTimeout(() => triggerFireworks(winData), 100);
-            remove(ref(db, `rooms/${roomId}/lastWin`));
-        }
       });
     }
 
@@ -411,34 +258,22 @@
             const p = pSnap.val();
             const newValue = Math.max(0, (p[side] || 0) + delta);
 
-            let updates = {};
-            updates[`players/${id}/${side}`] = newValue;
+            update(playerRef, { [side]: newValue });
 
             const date = todayTag();
-            const logPath = `scoreLog/${date}_${p.name}`;
             const updatedLog = {
                 date: date,
                 name: p.name,
                 wins: side === 'right' ? newValue : p.right || 0,
                 medals: side === 'left' ? newValue : p.left || 0
             };
-            updates[logPath] = updatedLog;
+            update(ref(db, `rooms/${roomId}/scoreLog/${date}_${p.name}`), updatedLog);
 
-            if (delta > 0) {
-                if (side === 'left') {
-                    medalIncreaseSound.play().catch(e => {});
-                } else {
-                    cupSound.play().catch(e => {});
-                    updates['lastWin'] = { timestamp: Date.now(), color: p.color || '#FFFFFF' };
-                }
-            }
-            
-            update(ref(db, `rooms/${roomId}`), updates);
+            if (delta > 0) { (side === 'left' ? medalSound : cupSound).play().catch(err=>console.log(err)); }
         });
     }
 
     const addPlayers = async () => {
-      clickSound.play().catch(e => {});
       if(!roomId || !isAdmin) {
         alert("يجب أن تكون مشرفاً في غرفة لإضافة لاعب.");
         return;
@@ -476,11 +311,83 @@
     const openModal = (m)=> m.style.display = "flex";
     const closeModal = (m)=> m.style.display = "none";
 
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', () => {
-            clickSound.play().catch(e => {});
-        });
-    });
+    document.getElementById("roomBanner").onclick = () => {
+        roomManagementView.style.display = 'block';
+        joinView.style.display = 'none';
+
+        const hasRoom = !!roomId;
+        roomInfoBlock.style.display = hasRoom ? 'block' : 'none';
+        document.getElementById('openLog').style.display = hasRoom ? 'block' : 'none';
+        document.getElementById('copyLinkBtn').style.display = hasRoom ? 'block' : 'none';
+
+        openModal(roomModal);
+    };
+    document.getElementById("closeRoomModal").onclick = () => closeModal(roomModal);
+    document.getElementById("openLog").onclick = () => {
+        closeModal(roomModal);
+        const tbody = document.getElementById("logTbody");
+        onValue(ref(db, `rooms/${roomId}/scoreLog`), (snap) => {
+            if(!snap.exists()){ tbody.innerHTML = `<tr><td colspan="4" class="subtle">لا توجد سجلات بعد</td></tr>`; return; }
+            const list = Object.values(snap.val());
+            list.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+            tbody.innerHTML = list.map(e=>`<tr><td>${e.date}</td><td>${e.name}</td><td>${e.wins||0}</td><td>${e.medals||0}</td></tr>`).join("");
+        }, { onlyOnce: true });
+        openModal(logModal);
+    };
+    document.getElementById("closeLog").onclick = () => closeModal(logModal);
+    document.getElementById("closeDeleteModal").onclick = () => closeModal(deleteModal);
+    document.getElementById("devInfoBtn").onclick = () => openModal(devInfoModal);
+    document.getElementById("closeDevInfoModal").onclick = () => closeModal(devInfoModal);
+
+    document.getElementById('showJoinView').onclick = () => { roomManagementView.style.display = 'none'; joinView.style.display = 'block'; };
+    document.getElementById('backToManagement').onclick = () => { joinView.style.display = 'none'; roomManagementView.style.display = 'block'; };
+
+    document.getElementById("doCreate").onclick = async () => {
+      const newRoomId = makeId();
+      const newAdminKey = makeId();
+      await set(ref(db, `rooms/${newRoomId}`), { createdAt: Date.now(), adminKey: newAdminKey });
+
+      const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
+      adminTokens[newRoomId] = newAdminKey;
+      localStorage.setItem("uno-admin-tokens", JSON.stringify(adminTokens));
+
+      history.replaceState({}, "", `${location.origin}${location.pathname}?room=${newRoomId}&admin=${newAdminKey}`);
+      location.reload();
+    };
+    document.getElementById("doJoin").onclick = async () => {
+      const joinRoomId = document.getElementById("joinId").value.trim();
+      if(!joinRoomId){ alert("اكتب رمز الغرفة"); return; }
+      const exists = (await get(child(ref(db, 'rooms'), joinRoomId))).exists();
+      if(!exists){ alert("الغرفة غير موجودة"); return; }
+
+      const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
+      const newAdminToken = adminTokens[joinRoomId] || '';
+
+      const url = new URL(location.href);
+      url.searchParams.set('room', joinRoomId);
+      if (newAdminToken) {
+        url.searchParams.set('admin', newAdminToken);
+      } else {
+        url.searchParams.delete('admin');
+      }
+      history.replaceState({}, "", url.toString());
+      location.reload();
+    };
+    document.getElementById('copyLinkBtn').onclick = () => {
+        const viewUrl = new URL(location.href);
+        viewUrl.searchParams.delete('admin');
+        navigator.clipboard.writeText(viewUrl.toString()).then(() => alert('تم نسخ رابط المشاهدة!'), () => alert('فشل نسخ الرابط.'));
+    };
+    document.getElementById('deletePlayerBtn').onclick = () => {
+        if (currentTargetPlayerId) { remove(ref(db, `rooms/${roomId}/players/${currentTargetPlayerId}`)); }
+        closeModal(deleteModal);
+    };
+    document.getElementById('deleteAllBtn').onclick = () => {
+        if (confirm('تحذير: سيتم حذف جميع اللاعبين نهائياً. هل أنت متأكد؟')) {
+            remove(ref(db, `rooms/${roomId}/players`));
+        }
+        closeModal(deleteModal);
+    };
 
     function initializeEventListeners() {
         let longPressTimer;
@@ -513,6 +420,7 @@
             }
         };
 
+        // Touch Events
         playersEl.addEventListener('touchstart', (e) => {
             touchEventDetected = true;
             handlePress(e.target);
@@ -523,6 +431,7 @@
             handleRelease(e.target);
         });
 
+        // Mouse Events
         playersEl.addEventListener('mousedown', (e) => {
             if (touchEventDetected || e.button !== 0) return;
             handlePress(e.target);
@@ -533,6 +442,7 @@
             handleRelease(e.target);
         });
 
+        // Cancel long press if interaction is interrupted
         const cancelPress = () => clearTimeout(longPressTimer);
         playersEl.addEventListener('touchcancel', cancelPress);
         playersEl.addEventListener('mouseleave', cancelPress);
@@ -540,26 +450,13 @@
 
 
     (async function boot(){
-      // استدعاء دالة الخلفيات الجديدة
-      setRandomGradientBackground();
-      setRandomBanner();
-      await ensureAdminStatus();
-
+      setRandomBackground(); // استدعاء دالة الخلفية العشوائية
       if(!roomId){
-        const roomStatusText = 'غير متصل';
-        const bannerHtml = `
-          <div class="header" id="roomBanner">
-            <img id="bannerImage" src="${currentBannerUrl}" alt="UNO Live Banner" class="banner-img">
-            <div class="title">
-              <span>🎮</span>
-              <span class="badge" id="roomStatus">${roomStatusText}</span>
-            </div>
-          </div>
-        `;
-        playersEl.innerHTML = bannerHtml;
+        roomStatus.textContent = 'غير متصل';
         document.getElementById('addPlayerFab').style.display = 'none';
         openModal(document.getElementById('roomModal'));
       } else {
+        await ensureAdminStatus();
         listenRoom();
       }
       initializeEventListeners();

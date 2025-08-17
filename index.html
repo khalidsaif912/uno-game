@@ -710,19 +710,14 @@ function handleScoreUpdate(id, side, delta) {
   await ensureAdminStatus();
 
   if(!roomId){
-    // ... (هذا الجزء لا يتغير)
     const roomStatusEl = document.getElementById('roomStatus');
     if(roomStatusEl) roomStatusEl.textContent = 'غير متصل';
     document.getElementById('addPlayerFab').style.display = 'none';
     openModal(document.getElementById('roomModal'));
   } else {
-    // --- بداية التعديل الرئيسي هنا ---
-    // هذا هو الكود الذي كان داخل listenRoom
-    
     modalRoomId.textContent = roomId;
     localStorage.setItem("uno-room-id", roomId);
 
-    // (1) هذا الجزء يستمع لتغيرات اللاعبين ويعرضهم (يبقى كما هو)
     onValue(ref(db, `rooms/${roomId}/players`), (snap) => {
         const playersData = snap.exists() ? snap.val() : {};
         const players = Object.entries(playersData).map(([id, v]) => ({ id, ...v }));
@@ -730,25 +725,23 @@ function handleScoreUpdate(id, side, delta) {
         renderPlayers(players);
     });
 
-    // (2) هذا الجزء الجديد يستمع لحدث الفوز ويشغل الألعاب النارية للجميع
     onValue(ref(db, `rooms/${roomId}/lastWin`), (snap) => {
         if (snap.exists()) {
             const winData = snap.val();
-            
-            // نشغل الألعاب النارية والوميض للجميع
             triggerFireworks(winData); 
-            
-            // المشرف فقط هو من يقوم بحذف الحدث بعد تشغيله
             if (isAdmin) {
                 remove(ref(db, `rooms/${roomId}/lastWin`));
             }
         }
     });
-    // --- نهاية التعديل الرئيسي ---
   }
-initializeStaticEventListeners();
-initializeDynamicEventListeners();
+
+  // هنا التصحيح
+  initializeStaticEventListeners();
+  initializeDynamicEventListeners();
+
 })();
+
 
   </script>
 </body>

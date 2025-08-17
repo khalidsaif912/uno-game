@@ -41,11 +41,15 @@
 
 
     
-    .header .banner-img {
-        width: 100%;
-        max-width: 280px;
-        height: auto;
-    }
+.header .banner-img {
+    width: 100%;      /* (1) اجعل عرض الصورة يملأ الحاوية بالكامل */
+    height: 120px;    /* (2) حدد ارتفاعًا ثابتًا للبانر (يمكنك تعديل هذا الرقم) */
+    object-fit: cover; /* (3) (الأهم) هذا هو السطر السحري */
+    object-position: center; /* (4) يركز على منتصف الصورة */
+}
+
+
+    
     .title {
         position: absolute;
         top: 18px;

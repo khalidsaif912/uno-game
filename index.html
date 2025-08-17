@@ -387,22 +387,30 @@ function playerCard(p, index){
 
 
 function triggerFireworks(winData) {
+    // --- بداية كود وميض البرق الجديد ---
     const flashElement = document.getElementById('screen-flash');
-    
-    // (1) تفعيل الوميض
-    flashElement.classList.add('active');
-    
-    // (2) بعد 100 ميلي ثانية، نبدأ في إخفاء الوميض
-    setTimeout(() => {
-        flashElement.classList.remove('active');
-    }, 100);
+    const flashCount = 3; // (1) عدد الومضات (يمكنك تغييره)
+    const flashInterval = 120; // (2) الفاصل الزمني بين كل ومضة (بالمللي ثانية)
 
-    // --- بداية التعديل الرئيسي هنا ---
+    // (3) حلقة لتكرار الوميض عدة مرات
+    for (let i = 0; i < flashCount; i++) {
+        setTimeout(() => {
+            // تفعيل الوميض
+            flashElement.classList.add('active');
+            
+            // إطفاء الوميض بعد فترة قصيرة جدًا
+            setTimeout(() => {
+                flashElement.classList.remove('active');
+            }, 60); // مدة كل ومضة
 
-    // (3) ننتظر فترة كافية (300 ميلي ثانية) لينتهي الوميض تمامًا
-    //     قبل أن نبدأ في إطلاق الألعاب النارية.
+        }, i * flashInterval); // (4) تأخير كل ومضة بشكل متسلسل
+    }
+    // --- نهاية كود وميض البرق الجديد ---
+
+    // (5) تأخير إطلاق الألعاب النارية حتى ينتهي تأثير البرق بالكامل
+    const totalFlashDuration = flashCount * flashInterval;
     setTimeout(() => {
-        // كل كود الألعاب النارية الآن موجود داخل هذا الـ setTimeout
+        // كل كود الألعاب النارية موجود هنا
         const winnerColor = winData.color || '#FFFFFF';
         fireworksSound.play().catch(e => console.log("Audio play failed:", e));
 
@@ -412,58 +420,14 @@ function triggerFireworks(winData) {
             useWorker: true
         });
 
-        const duration = 5 * 1000;
-        const end = Date.now() + duration;
+        // ... باقي كود الألعاب النارية لا يتغير ...
+        // ... (يستمر حتى نهاية الدالة) ...
 
-        const bannerEl = document.getElementById('roomBanner');
-        const bannerRect = bannerEl ? bannerEl.getBoundingClientRect() : { bottom: 0 };
-        const bannerHeight = bannerRect.bottom;
+    }, totalFlashDuration); // (6) ننتظر حتى تنتهي كل الومضات
 
-        (function frame() {
-            if (Date.now() > end) {
-                return;
-            }
-
-            fire({
-                particleCount: 50,
-                angle: 90,
-                spread: 45,
-                startVelocity: 55,
-                origin: { x: Math.random(), y: 1 },
-                ticks: 150,
-                gravity: 1,
-                shapes: ['circle'],
-                scalar: 0.6,
-                colors: ['#FFFFFF', winnerColor]
-            }).then(result => {
-                if (!result) return;
-
-                const explosionY = result.origin.y * window.innerHeight;
-                if (explosionY < bannerHeight) {
-                    return;
-                }
-
-                fire({
-                    particleCount: 800,
-                    spread: 360,
-                    startVelocity: 40,
-                    origin: result.origin,
-                    gravity: 0.4,
-                    ticks: 500,
-                    decay: 0.94,
-                    shapes: ['circle'],
-                    scalar: 2.0,
-                    colors: [winnerColor, '#FFFFFF', '#FFD700']
-                });
-            });
-
-            setTimeout(frame, 500 + Math.random() * 300);
-        }());
-
-    }, 300); // (4) هذا هو التأخير الزمني: 300 ميلي ثانية
-
-    // --- نهاية التعديل الرئيسي ---
+    // ... (باقي الدالة فارغ الآن لأن كل شيء تم نقله للداخل) ...
 }
+
 
 
 

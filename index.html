@@ -9,8 +9,12 @@
       --bg:#0f1220; --card-bg:#171a2b; --text:#e8ecff; --muted:#9aa3c7; --accent:#7aa2ff;
     }
     * { box-sizing: border-box; }
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
     body {
-      margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: var(--text);
       background-color: #333;
       background-size: cover;
@@ -23,8 +27,10 @@
       background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(10px);
       border:1px solid rgba(255,255,255,0.1); padding: 12px 14px;
       border-radius:14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25); margin-bottom: 16px; cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25); cursor: pointer;
       position: relative;
+      width: 100%;
+      z-index: 101;
     }
     .header .banner-img {
         width: 100%;
@@ -48,11 +54,11 @@
         gap: 12px;
     }
     .card {
-      /* تم حذف لون الخلفية الثابت من هنا ليعتمد على اللون من الجافاسكريبت */
       border-radius:16px; padding:16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       position: relative; user-select: none;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1;
     }
     .card-body {
         display: grid;
@@ -97,7 +103,7 @@
         unicode-bidi: plaintext;
     }
     .badges { display:flex; justify-content:space-between; gap:8px; margin-top:12px; font-size:22px; min-height: 26px; padding: 0 10px; }
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:40; }
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:110; }
     .modal{ width:min(92vw,560px); background:#151935; border:1px solid #2a3257; border-radius:18px; padding:18px; }
     .modal h3{ margin:0 0 16px; text-align: center; }
     .input, input[type=text]{ width:100%; background:#0f142e; color:var(--text); border:1px solid #28325b; border-radius:12px; padding:10px 12px; outline:none; }
@@ -155,25 +161,20 @@
         height: 100%;
         pointer-events: none;
         z-index: 100;
+        background-color: transparent;
     }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas"></canvas>
   <div class="wrap">
-    <div class="header" id="roomBanner">
-      <img id="bannerImage" src="./banner.jpg" alt="UNO Live Banner" class="banner-img">
-      <div class="title">
-        <span>🎮</span>
-        <span class="badge" id="roomStatus"></span>
-      </div>
+    <div class="grid" id="players">
     </div>
-    <div class="grid" id="players"></div>
   </div>
 
-  <button class="add-player-fab" id="addPlayerFab"><span>+</span> إضافة لاعب</button>
-  <button class="corner-btn" id="devInfoBtn">MR.K</button>
-  <button class="corner-btn" id="refreshBtn">تحديث</button>
+  <button class="add-player-fab btn" id="addPlayerFab"><span>+</span> إضافة لاعب</button>
+  <button class="corner-btn btn" id="devInfoBtn">MR.K</button>
+  <button class="corner-btn btn" id="refreshBtn">تحديث</button>
 
   <!-- Modals -->
   <div class="modal-backdrop" id="roomModal"><div class="modal"><div id="roomManagementView"><h3>إدارة الغرفة</h3><div class="room-info" id="roomInfoBlock">رمز الغرفة الحالي: <span id="modalRoomId"></span></div><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="openLog">📜 عرض السجل</button><button class="btn" id="copyLinkBtn">🔗 نسخ رابط المشاهدة</button></div><hr><div class="row2"><button class="btn" id="doCreate">🚀 إنشاء غرفة جديدة</button><button class="btn" id="showJoinView">🚪 الانضمام لغرفة أخرى</button></div></div><div id="joinView" style="display: none;"><h3>الانضمام لغرفة</h3><div style="display:flex; gap:6px; align-items:center;"><input type="text" id="joinId" class="input" placeholder="أدخل رمز الغرفة" /><button class="btn" id="doJoin">دخول</button></div><button class="btn" id="backToManagement" style="margin-top: 10px; background: #2a3257;">رجوع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeRoomModal">إغلاق</button></div></div></div>
@@ -186,6 +187,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, get, child, remove } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
+    let currentBannerUrl = './banner.jpg';
+
     function setRandomBackground() {
       const imageCount = 8;
       const randomIndex = Math.floor(Math.random() * imageCount) + 1;
@@ -194,20 +197,15 @@
     }
 
     function setRandomBanner() {
-      const bannerCount = 4; // عدد صور البنر الحالي
+      const bannerCount = 4;
       const randomIndex = Math.floor(Math.random() * bannerCount);
-      let bannerUrl;
-      
-      if (randomIndex === 0) {
-        bannerUrl = './banner.jpg'; // البنر الأساسي
-      } else {
-        bannerUrl = `./banner${randomIndex}.jpg`; // البنرات المرقمة
+      currentBannerUrl = randomIndex === 0 ? './banner.jpg' : `./banner${randomIndex}.jpg`;
+      const bannerImageEl = document.getElementById('bannerImage');
+      if (bannerImageEl) {
+        bannerImageEl.src = currentBannerUrl;
       }
-      
-      document.getElementById('bannerImage').src = bannerUrl;
     }
 
-    // دالة لتحويل لون hex إلى rgba
     function hexToRgba(hex, alpha = 1) {
         const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
         return `rgba(${r},${g},${b},${alpha})`;
@@ -232,16 +230,22 @@
     let isAdmin = false;
 
     const playersEl = document.getElementById("players");
-    const roomStatus = document.getElementById("roomStatus");
     const modalRoomId = document.getElementById("modalRoomId");
     let currentTargetPlayerId = null;
 
-    const medalSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
+    // --- منطقة تعريف الأصوات ---
     const cupSound = new Audio('https://cdn.pixabay.com/audio/2022/01/18/audio_e58f83286a.mp3');
     const fireworksSound = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c48286dec8.mp3');
-    medalSound.volume = 0.5;
+    // الأصوات الجديدة
+    const clickSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_746d063532.mp3');
+    const medalIncreaseSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
+
+    // التحكم في مستوى الصوت
     cupSound.volume = 0.6;
     fireworksSound.volume = 0.7;
+    clickSound.volume = 0.8;
+    medalIncreaseSound.volume = 0.5;
+    // --- نهاية منطقة الأصوات ---
 
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];
     const CARD_COLORS = ["#8e44ad", "#e67e22", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#16a085"];
@@ -287,35 +291,85 @@
     }
 
     function renderPlayers(list){
-      playersEl.innerHTML = list.map((p, i) => playerCard(p, i)).join("");
+      const roomStatusText = isAdmin ? 'مشرف' : 'مشاهد';
+      const bannerHtml = `
+        <div class="header" id="roomBanner">
+          <img id="bannerImage" src="${currentBannerUrl}" alt="UNO Live Banner" class="banner-img">
+          <div class="title">
+            <span>🎮</span>
+            <span class="badge" id="roomStatus">${roomStatusText}</span>
+          </div>
+        </div>
+      `;
+
+      const playersHtml = list.map((p, i) => playerCard(p, i)).join("");
+      playersEl.innerHTML = bannerHtml + playersHtml;
+
+      document.getElementById("roomBanner").onclick = () => {
+          clickSound.play().catch(e => {});
+          roomManagementView.style.display = 'block';
+          joinView.style.display = 'none';
+          const hasRoom = !!roomId;
+          roomInfoBlock.style.display = hasRoom ? 'block' : 'none';
+          document.getElementById('openLog').style.display = hasRoom ? 'block' : 'none';
+          document.getElementById('copyLinkBtn').style.display = hasRoom ? 'block' : 'none';
+          openModal(roomModal);
+      };
     }
 
-    function triggerFireworks() {
+    function triggerFireworks(winData) {
+        const winnerColor = winData.color || '#FFFFFF';
         fireworksSound.play().catch(e => console.log("Audio play failed:", e));
         const canvas = document.getElementById('confetti-canvas');
-        const fire = confetti.create(canvas, { resize: true });
+        const fire = confetti.create(canvas, {
+            resize: true,
+            useWorker: true
+        });
 
         const duration = 5 * 1000;
-        const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+        const end = Date.now() + duration;
 
-        function randomInRange(min, max) {
-            return Math.random() * (max - min) + min;
-        }
+        const bannerEl = document.getElementById('roomBanner');
+        const bannerBottom = bannerEl ? bannerEl.getBoundingClientRect().bottom : 0;
+        canvas.style.clipPath = `inset(${bannerBottom}px 0 0 0)`;
 
-        const interval = setInterval(function() {
-            const timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) return clearInterval(interval);
-
-            const particleCount = 50 * (timeLeft / duration);
-            fire({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-            fire({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-        }, 250);
+        (function frame() {
+            if (Date.now() > end) {
+                canvas.style.clipPath = 'none';
+                return;
+            }
+            fire({
+                particleCount: 50,
+                angle: 90,
+                spread: 45,
+                startVelocity: 55,
+                origin: { x: Math.random(), y: 1 },
+                ticks: 150,
+                gravity: 1,
+                shapes: ['circle'],
+                scalar: 0.6,
+                colors: ['#FFFFFF', winnerColor]
+            }).then(result => {
+                if (!result) return;
+                fire({
+                    particleCount: 400,
+                    spread: 360,
+                    startVelocity: 35,
+                    origin: result.origin,
+                    gravity: 0.5,
+                    ticks: 400,
+                    decay: 0.95,
+                    shapes: ['circle'],
+                    scalar: 1.5,
+                    colors: [winnerColor, '#FFFFFF', '#FFD700']
+                });
+            });
+            setTimeout(frame, 600 + Math.random() * 400);
+        }());
     }
 
     function listenRoom(){
       if(!roomId) return;
-      roomStatus.textContent = isAdmin ? 'مشرف' : 'مشاهد';
       modalRoomId.textContent = roomId;
       localStorage.setItem("uno-room-id", roomId);
       onValue(ref(db, `rooms/${roomId}/players`), (snap) => {
@@ -326,7 +380,8 @@
       });
       onValue(ref(db, `rooms/${roomId}/lastWin`), (snap) => {
         if (snap.exists()) {
-            triggerFireworks();
+            const winData = snap.val();
+            setTimeout(() => triggerFireworks(winData), 100);
             remove(ref(db, `rooms/${roomId}/lastWin`));
         }
       });
@@ -366,10 +421,11 @@
 
             if (delta > 0) {
                 if (side === 'left') {
-                    medalSound.play().catch(err=>console.log(err));
+                    // تشغيل صوت الميداليات هنا
+                    medalIncreaseSound.play().catch(e => {});
                 } else {
-                    cupSound.play().catch(err=>console.log(err));
-                    updates['lastWin'] = Date.now(); // Trigger fireworks for everyone
+                    cupSound.play().catch(e => {});
+                    updates['lastWin'] = { timestamp: Date.now(), color: p.color || '#FFFFFF' };
                 }
             }
             
@@ -378,6 +434,7 @@
     }
 
     const addPlayers = async () => {
+      clickSound.play().catch(e => {});
       if(!roomId || !isAdmin) {
         alert("يجب أن تكون مشرفاً في غرفة لإضافة لاعب.");
         return;
@@ -415,84 +472,12 @@
     const openModal = (m)=> m.style.display = "flex";
     const closeModal = (m)=> m.style.display = "none";
 
-    document.getElementById("roomBanner").onclick = () => {
-        roomManagementView.style.display = 'block';
-        joinView.style.display = 'none';
-
-        const hasRoom = !!roomId;
-        roomInfoBlock.style.display = hasRoom ? 'block' : 'none';
-        document.getElementById('openLog').style.display = hasRoom ? 'block' : 'none';
-        document.getElementById('copyLinkBtn').style.display = hasRoom ? 'block' : 'none';
-
-        openModal(roomModal);
-    };
-    document.getElementById("closeRoomModal").onclick = () => closeModal(roomModal);
-    document.getElementById("openLog").onclick = () => {
-        closeModal(roomModal);
-        const tbody = document.getElementById("logTbody");
-        onValue(ref(db, `rooms/${roomId}/scoreLog`), (snap) => {
-            if(!snap.exists()){ tbody.innerHTML = `<tr><td colspan="4" class="subtle">لا توجد سجلات بعد</td></tr>`; return; }
-            const list = Object.values(snap.val());
-            list.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-            tbody.innerHTML = list.map(e=>`<tr><td>${e.date}</td><td>${e.name}</td><td>${e.wins||0}</td><td>${e.medals||0}</td></tr>`).join("");
-        }, { onlyOnce: true });
-        openModal(logModal);
-    };
-    document.getElementById("closeLog").onclick = () => closeModal(logModal);
-    document.getElementById("closeDeleteModal").onclick = () => closeModal(deleteModal);
-    document.getElementById("devInfoBtn").onclick = () => openModal(devInfoModal);
-    document.getElementById("closeDevInfoModal").onclick = () => closeModal(devInfoModal);
-    document.getElementById("refreshBtn").onclick = () => location.reload();
-
-    document.getElementById('showJoinView').onclick = () => { roomManagementView.style.display = 'none'; joinView.style.display = 'block'; };
-    document.getElementById('backToManagement').onclick = () => { joinView.style.display = 'none'; roomManagementView.style.display = 'block'; };
-
-    document.getElementById("doCreate").onclick = async () => {
-      const newRoomId = makeId();
-      const newAdminKey = makeId();
-      await set(ref(db, `rooms/${newRoomId}`), { createdAt: Date.now(), adminKey: newAdminKey });
-
-      const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
-      adminTokens[newRoomId] = newAdminKey;
-      localStorage.setItem("uno-admin-tokens", JSON.stringify(adminTokens));
-
-      history.replaceState({}, "", `${location.origin}${location.pathname}?room=${newRoomId}&admin=${newAdminKey}`);
-      location.reload();
-    };
-    document.getElementById("doJoin").onclick = async () => {
-      const joinRoomId = document.getElementById("joinId").value.trim();
-      if(!joinRoomId){ alert("اكتب رمز الغرفة"); return; }
-      const exists = (await get(child(ref(db, 'rooms'), joinRoomId))).exists();
-      if(!exists){ alert("الغرفة غير موجودة"); return; }
-
-      const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
-      const newAdminToken = adminTokens[joinRoomId] || '';
-
-      const url = new URL(location.href);
-      url.searchParams.set('room', joinRoomId);
-      if (newAdminToken) {
-        url.searchParams.set('admin', newAdminToken);
-      } else {
-        url.searchParams.delete('admin');
-      }
-      history.replaceState({}, "", url.toString());
-      location.reload();
-    };
-    document.getElementById('copyLinkBtn').onclick = () => {
-        const viewUrl = new URL(location.href);
-        viewUrl.searchParams.delete('admin');
-        navigator.clipboard.writeText(viewUrl.toString()).then(() => alert('تم نسخ رابط المشاهدة!'), () => alert('فشل نسخ الرابط.'));
-    };
-    document.getElementById('deletePlayerBtn').onclick = () => {
-        if (currentTargetPlayerId) { remove(ref(db, `rooms/${roomId}/players/${currentTargetPlayerId}`)); }
-        closeModal(deleteModal);
-    };
-    document.getElementById('deleteAllBtn').onclick = () => {
-        if (confirm('تحذير: سيتم حذف جميع اللاعبين نهائياً. هل أنت متأكد؟')) {
-            remove(ref(db, `rooms/${roomId}/players`));
-        }
-        closeModal(deleteModal);
-    };
+    // إضافة صوت النقر العام لجميع الأزرار التي لها كلاس .btn
+    document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', () => {
+            clickSound.play().catch(e => {});
+        });
+    });
 
     function initializeEventListeners() {
         let longPressTimer;
@@ -535,7 +520,7 @@
             handleRelease(e.target);
         });
 
-                playersEl.addEventListener('mousedown', (e) => {
+        playersEl.addEventListener('mousedown', (e) => {
             if (touchEventDetected || e.button !== 0) return;
             handlePress(e.target);
         });
@@ -554,12 +539,23 @@
     (async function boot(){
       setRandomBackground();
       setRandomBanner();
+      await ensureAdminStatus();
+
       if(!roomId){
-        roomStatus.textContent = 'غير متصل';
+        const roomStatusText = 'غير متصل';
+        const bannerHtml = `
+          <div class="header" id="roomBanner">
+            <img id="bannerImage" src="${currentBannerUrl}" alt="UNO Live Banner" class="banner-img">
+            <div class="title">
+              <span>🎮</span>
+              <span class="badge" id="roomStatus">${roomStatusText}</span>
+            </div>
+          </div>
+        `;
+        playersEl.innerHTML = bannerHtml;
         document.getElementById('addPlayerFab').style.display = 'none';
         openModal(document.getElementById('roomModal'));
       } else {
-        await ensureAdminStatus();
         listenRoom();
       }
       initializeEventListeners();

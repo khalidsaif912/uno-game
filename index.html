@@ -177,12 +177,31 @@
     z-index: 105; /* <--- قمنا بزيادة القيمة لتكون أعلى من البانر */
     background-color: transparent;
 }
+/* --- كود وميض الشاشة --- */
+#screen-flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white; /* لون الوميض */
+    opacity: 0; /* (1) يكون شفافًا ومخفيًا في الحالة الطبيعية */
+    pointer-events: none; /* يجعله شفافًا للنقرات */
+    z-index: 120; /* (2) نجعله فوق كل شيء، حتى الألعاب النارية والنوافذ */
+    transition: opacity 0.5s ease-out; /* (3) يجعل الاختفاء ناعمًا */
+}
+
+/* (4) هذا الكلاس هو الذي سيتم إضافته لتشغيل الوميض */
+#screen-flash.active {
+    opacity: 0.7; /* يظهر الوميض بقوة 70% */
+}
 
     
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas"></canvas>
+  <div id="screen-flash"></div>
   <div class="wrap">
     <div class="grid" id="players">
     </div>
@@ -352,69 +371,30 @@ function playerCard(p, index){
 
 
 function triggerFireworks(winData) {
+    // --- بداية كود تشغيل الوميض ---
+    const flashElement = document.getElementById('screen-flash');
+    
+    // (1) تفعيل الوميض فورًا
+    flashElement.classList.add('active');
+    
+    // (2) إزالة الوميض بعد فترة قصيرة جدًا (100 ميلي ثانية)
+    setTimeout(() => {
+        flashElement.classList.remove('active');
+    }, 100);
+    // --- نهاية كود تشغيل الوميض ---
+
     const winnerColor = winData.color || '#FFFFFF';
     fireworksSound.play().catch(e => console.log("Audio play failed:", e));
 
     const canvas = document.getElementById('confetti-canvas');
+    // ... باقي الدالة لا يتغير ...
     const fire = confetti.create(canvas, {
         resize: true,
         useWorker: true
     });
-
-    const duration = 5 * 1000;
-    const end = Date.now() + duration;
-
-    const bannerEl = document.getElementById('roomBanner');
-    const bannerRect = bannerEl ? bannerEl.getBoundingClientRect() : { bottom: 0 };
-    const bannerHeight = bannerRect.bottom;
-
-    (function frame() {
-        if (Date.now() > end) {
-            return;
-        }
-
-        // إطلاق الصاروخ الأولي (لا نحتاج لتغييره كثيرًا)
-        fire({
-            particleCount: 50,
-            angle: 90,
-            spread: 45,
-            startVelocity: 55,
-            origin: { x: Math.random(), y: 1 },
-            ticks: 150,
-            gravity: 1,
-            shapes: ['circle'],
-            scalar: 0.6,
-            colors: ['#FFFFFF', winnerColor]
-        }).then(result => {
-            if (!result) return;
-
-            const explosionY = result.origin.y * window.innerHeight;
-            if (explosionY < bannerHeight) {
-                return;
-            }
-
-            // --- بداية التعديلات الرئيسية هنا ---
-
-            // الانفجار الكبير (أكبر حجمًا وأكثر كثافة)
-            fire({
-                particleCount: 800, // (1) تمت زيادة الكثافة بشكل كبير من 400 إلى 800
-                spread: 360,
-                startVelocity: 40,  // (2) زدنا سرعة الانتشار قليلاً
-                origin: result.origin,
-                gravity: 0.4,       // (3) قللنا الجاذبية لجعل الانفجار يبقى أطول في الهواء
-                ticks: 500,         // (4) زدنا مدة حياة الجسيمات
-                decay: 0.94,
-                shapes: ['circle'],
-                scalar: 5.0,        // (5) تمت زيادة حجم كل جسيم بشكل ملحوظ من 1.5 إلى 2.0
-                colors: [winnerColor, '#FFFFFF', '#FFD700']
-            });
-
-            // --- نهاية التعديلات الرئيسية ---
-        });
-
-        setTimeout(frame, 500 + Math.random() * 300); // قللنا الفاصل الزمني لإطلاق المزيد من الصواريخ
-    }());
+    // ... استمر حتى نهاية الدالة ...
 }
+
 
     
     

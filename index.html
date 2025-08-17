@@ -372,29 +372,84 @@ function playerCard(p, index){
 
 
 function triggerFireworks(winData) {
-    // --- بداية كود تشغيل الوميض ---
     const flashElement = document.getElementById('screen-flash');
     
-    // (1) تفعيل الوميض فورًا
+    // (1) تفعيل الوميض
     flashElement.classList.add('active');
     
-    // (2) إزالة الوميض بعد فترة قصيرة جدًا (100 ميلي ثانية)
+    // (2) بعد 100 ميلي ثانية، نبدأ في إخفاء الوميض
     setTimeout(() => {
         flashElement.classList.remove('active');
     }, 100);
-    // --- نهاية كود تشغيل الوميض ---
 
-    const winnerColor = winData.color || '#FFFFFF';
-    fireworksSound.play().catch(e => console.log("Audio play failed:", e));
+    // --- بداية التعديل الرئيسي هنا ---
 
-    const canvas = document.getElementById('confetti-canvas');
-    // ... باقي الدالة لا يتغير ...
-    const fire = confetti.create(canvas, {
-        resize: true,
-        useWorker: true
-    });
-    // ... استمر حتى نهاية الدالة ...
+    // (3) ننتظر فترة كافية (300 ميلي ثانية) لينتهي الوميض تمامًا
+    //     قبل أن نبدأ في إطلاق الألعاب النارية.
+    setTimeout(() => {
+        // كل كود الألعاب النارية الآن موجود داخل هذا الـ setTimeout
+        const winnerColor = winData.color || '#FFFFFF';
+        fireworksSound.play().catch(e => console.log("Audio play failed:", e));
+
+        const canvas = document.getElementById('confetti-canvas');
+        const fire = confetti.create(canvas, {
+            resize: true,
+            useWorker: true
+        });
+
+        const duration = 5 * 1000;
+        const end = Date.now() + duration;
+
+        const bannerEl = document.getElementById('roomBanner');
+        const bannerRect = bannerEl ? bannerEl.getBoundingClientRect() : { bottom: 0 };
+        const bannerHeight = bannerRect.bottom;
+
+        (function frame() {
+            if (Date.now() > end) {
+                return;
+            }
+
+            fire({
+                particleCount: 50,
+                angle: 90,
+                spread: 45,
+                startVelocity: 55,
+                origin: { x: Math.random(), y: 1 },
+                ticks: 150,
+                gravity: 1,
+                shapes: ['circle'],
+                scalar: 0.6,
+                colors: ['#FFFFFF', winnerColor]
+            }).then(result => {
+                if (!result) return;
+
+                const explosionY = result.origin.y * window.innerHeight;
+                if (explosionY < bannerHeight) {
+                    return;
+                }
+
+                fire({
+                    particleCount: 800,
+                    spread: 360,
+                    startVelocity: 40,
+                    origin: result.origin,
+                    gravity: 0.4,
+                    ticks: 500,
+                    decay: 0.94,
+                    shapes: ['circle'],
+                    scalar: 2.0,
+                    colors: [winnerColor, '#FFFFFF', '#FFD700']
+                });
+            });
+
+            setTimeout(frame, 500 + Math.random() * 300);
+        }());
+
+    }, 300); // (4) هذا هو التأخير الزمني: 300 ميلي ثانية
+
+    // --- نهاية التعديل الرئيسي ---
 }
+
 
 
     

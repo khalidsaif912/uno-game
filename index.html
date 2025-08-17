@@ -497,39 +497,47 @@ function triggerFireworks(winData) {
       return isAdmin;
     }
 
-    function handleScoreUpdate(id, side, delta) {
-        if (!isAdmin) return;
-        const playerRef = ref(db, `rooms/${roomId}/players/${id}`);
-        get(playerRef).then(pSnap => {
-            if(!pSnap.exists()) return;
-            const p = pSnap.val();
-            const newValue = Math.max(0, (p[side] || 0) + delta);
+function handleScoreUpdate(id, side, delta) {
+    if (!isAdmin) return;
+    const playerRef = ref(db, `rooms/${roomId}/players/${id}`);
+    get(playerRef).then(pSnap => {
+        if (!pSnap.exists()) return;
+        const p = pSnap.val();
+        const newValue = Math.max(0, (p[side] || 0) + delta);
 
-            let updates = {};
-            updates[`players/${id}/${side}`] = newValue;
+        let updates = {};
+        updates[`players/${id}/${side}`] = newValue;
 
-            const date = todayTag();
-            const logPath = `scoreLog/${date}_${p.name}`;
-            const updatedLog = {
-                date: date,
-                name: p.name,
-                wins: side === 'right' ? newValue : p.right || 0,
-                medals: side === 'left' ? newValue : p.left || 0
-            };
-            updates[logPath] = updatedLog;
+        const date = todayTag();
+        const logPath = `scoreLog/${date}_${p.name}`;
+        const updatedLog = {
+            date: date,
+            name: p.name,
+            wins: side === 'right' ? newValue : p.right || 0,
+            medals: side === 'left' ? newValue : p.left || 0
+        };
+        updates[logPath] = updatedLog;
 
-            if (delta > 0) {
-                if (side === 'left') {
-                    medalIncreaseSound.play().catch(e => {});
-                } else {
-                    cupSound.play().catch(e => {});
-                    updates['lastWin'] = { timestamp: Date.now(), color: p.color || '#FFFFFF' };
-                }
+        if (delta > 0) {
+            if (side === 'left') {
+                medalIncreaseSound.play().catch(e => {});
+            } else {
+                cupSound.play().catch(e => {});
+                // --- التعديل الرئيسي هنا ---
+                // (1) لم نعد نستدعي الألعاب النارية مباشرة.
+                // (2) بدلاً من ذلك، نسجل حدث الفوز في قاعدة البيانات مع لون اللاعب.
+                updates['lastWin'] = { timestamp: Date.now(), color: p.color || '#FFFFFF' };
             }
-            
-            update(ref(db, `rooms/${roomId}`), updates);
-        });
-    }
+        }
+        
+        // (3) نقوم بتحديث كل شيء في قاعدة البيانات مرة واحدة.
+        update(ref(db, `rooms/${roomId}`), updates);
+    });
+}
+
+
+
+    
 
     const addPlayers = async () => {
       clickSound.play().catch(e => {});

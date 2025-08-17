@@ -16,10 +16,8 @@
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: var(--text);
-      /* --- التعديل الرئيسي هنا --- */
-      /* تم حذف خصائص الخلفية القديمة */
-      background-attachment: fixed; /* نحافظ على هذه الخاصية لتثبيت التدرج */
-      transition: background 0.5s ease; /* إضافة انتقال ناعم عند تغيير الخلفية */
+      background-attachment: fixed;
+      transition: background 0.5s ease;
     }
     .wrap { max-width: 600px; margin: 0 auto; padding: 16px; padding-bottom: 100px; }
     .header {
@@ -189,7 +187,6 @@
 
     let currentBannerUrl = './banner.jpg';
 
-    // --- دالة الخلفيات الجديدة ---
     function setRandomGradientBackground() {
       const gradients = [
         "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
@@ -352,7 +349,7 @@
                 ticks: 150,
                 gravity: 1,
                 shapes: ['circle'],
-                scalar: 0.9,
+                scalar: 0.6,
                 colors: ['#FFFFFF', winnerColor]
             }).then(result => {
                 if (!result) return;
@@ -463,7 +460,6 @@
         await set(child(ref(db, `rooms/${roomId}/players`), makeId()), { name, left:0, right:0, character:char, color });
       }
     };
-    document.getElementById('addPlayerFab').onclick = addPlayers;
 
     const roomModal = document.getElementById("roomModal");
     const logModal = document.getElementById("logModal");
@@ -476,13 +472,89 @@
     const openModal = (m)=> m.style.display = "flex";
     const closeModal = (m)=> m.style.display = "none";
 
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', () => {
-            clickSound.play().catch(e => {});
+    // --- منطقة ربط الأحداث (تم تجميعها هنا) ---
+    function initializeStaticEventListeners() {
+        // إضافة صوت النقر العام لجميع الأزرار التي لها كلاس .btn
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', () => {
+                clickSound.play().catch(e => {});
+            });
         });
-    });
 
-    function initializeEventListeners() {
+        // ربط وظائف الأزرار الثابتة
+        document.getElementById('addPlayerFab').onclick = addPlayers;
+        document.getElementById('devInfoBtn').onclick = () => openModal(devInfoModal);
+        document.getElementById('refreshBtn').onclick = () => location.reload();
+
+        // أزرار النوافذ المنبثقة
+        document.getElementById("closeRoomModal").onclick = () => closeModal(roomModal);
+        document.getElementById("openLog").onclick = () => {
+            closeModal(roomModal);
+            const tbody = document.getElementById("logTbody");
+            onValue(ref(db, `rooms/${roomId}/scoreLog`), (snap) => {
+                if(!snap.exists()){ tbody.innerHTML = `<tr><td colspan="4" class="subtle">لا توجد سجلات بعد</td></tr>`; return; }
+                const list = Object.values(snap.val());
+                list.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+                tbody.innerHTML = list.map(e=>`<tr><td>${e.date}</td><td>${e.name}</td><td>${e.wins||0}</td><td>${e.medals||0}</td></tr>`).join("");
+            }, { onlyOnce: true });
+            openModal(logModal);
+        };
+        document.getElementById("closeLog").onclick = () => closeModal(logModal);
+        document.getElementById("closeDeleteModal").onclick = () => closeModal(deleteModal);
+        document.getElementById("closeDevInfoModal").onclick = () => closeModal(devInfoModal);
+
+        document.getElementById('showJoinView').onclick = () => { roomManagementView.style.display = 'none'; joinView.style.display = 'block'; };
+        document.getElementById('backToManagement').onclick = () => { joinView.style.display = 'none'; roomManagementView.style.display = 'block'; };
+
+        document.getElementById("doCreate").onclick = async () => {
+          const newRoomId = makeId();
+          const newAdminKey = makeId();
+          await set(ref(db, `rooms/${newRoomId}`), { createdAt: Date.now(), adminKey: newAdminKey });
+
+          const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
+          adminTokens[newRoomId] = newAdminKey;
+          localStorage.setItem("uno-admin-tokens", JSON.stringify(adminTokens));
+
+          history.replaceState({}, "", `${location.origin}${location.pathname}?room=${newRoomId}&admin=${newAdminKey}`);
+          location.reload();
+        };
+        document.getElementById("doJoin").onclick = async () => {
+          const joinRoomId = document.getElementById("joinId").value.trim();
+                    if(!joinRoomId){ alert("اكتب رمز الغرفة"); return; }
+          const exists = (await get(child(ref(db, 'rooms'), joinRoomId))).exists();
+          if(!exists){ alert("الغرفة غير موجودة"); return; }
+
+          const adminTokens = JSON.parse(localStorage.getItem("uno-admin-tokens") || '{}');
+          const newAdminToken = adminTokens[joinRoomId] || '';
+
+          const url = new URL(location.href);
+          url.searchParams.set('room', joinRoomId);
+          if (newAdminToken) {
+            url.searchParams.set('admin', newAdminToken);
+          } else {
+            url.searchParams.delete('admin');
+          }
+          history.replaceState({}, "", url.toString());
+          location.reload();
+        };
+        document.getElementById('copyLinkBtn').onclick = () => {
+            const viewUrl = new URL(location.href);
+            viewUrl.searchParams.delete('admin');
+            navigator.clipboard.writeText(viewUrl.toString()).then(() => alert('تم نسخ رابط المشاهدة!'), () => alert('فشل نسخ الرابط.'));
+        };
+        document.getElementById('deletePlayerBtn').onclick = () => {
+            if (currentTargetPlayerId) { remove(ref(db, `rooms/${roomId}/players/${currentTargetPlayerId}`)); }
+            closeModal(deleteModal);
+        };
+        document.getElementById('deleteAllBtn').onclick = () => {
+            if (confirm('تحذير: سيتم حذف جميع اللاعبين نهائياً. هل أنت متأكد؟')) {
+                remove(ref(db, `rooms/${roomId}/players`));
+            }
+            closeModal(deleteModal);
+        };
+    }
+
+    function initializeDynamicEventListeners() {
         let longPressTimer;
         let isLongPress = false;
         let touchEventDetected = false;
@@ -540,7 +612,6 @@
 
 
     (async function boot(){
-      // استدعاء دالة الخلفيات الجديدة
       setRandomGradientBackground();
       setRandomBanner();
       await ensureAdminStatus();
@@ -558,11 +629,16 @@
         `;
         playersEl.innerHTML = bannerHtml;
         document.getElementById('addPlayerFab').style.display = 'none';
-        openModal(document.getElementById('roomModal'));
+        // نفتح النافذة فقط في حالة عدم وجود غرفة
+        document.getElementById("roomBanner").onclick = () => openModal(roomModal);
+        openModal(roomModal);
       } else {
         listenRoom();
       }
-      initializeEventListeners();
+      
+      // نقوم بتشغيل دوال ربط الأحداث
+      initializeStaticEventListeners();
+      initializeDynamicEventListeners();
     })();
   </script>
 </body>

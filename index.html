@@ -189,9 +189,20 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 121; /* <--- قمنا بزيادة القيمة لتكون أعلى من الوميض (120) */
+    z-index: 121; 
     background-color: transparent;
+    visibility: hidden; /* <--- (1) هذا هو السطر الجديد والمهم */
+    opacity: 0; /* (2) نضيف هذا لضمان الاختفاء الكامل */
+    transition: opacity 0.3s; /* (3) لجعل ظهوره واختفائه ناعمًا */
 }
+
+/* (4) نضيف هذا الكلاس الجديد لإظهار الـ Canvas عند الحاجة */
+#confetti-canvas.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+
 
 /* --- كود وميض الشاشة --- */
 #screen-flash {
@@ -385,48 +396,56 @@ function playerCard(p, index){
 
 
 
-
 function triggerFireworks(winData) {
-    // --- بداية كود وميض البرق الجديد ---
     const flashElement = document.getElementById('screen-flash');
-    const flashCount = 3; // (1) عدد الومضات (يمكنك تغييره)
-    const flashInterval = 120; // (2) الفاصل الزمني بين كل ومضة (بالمللي ثانية)
+    const canvas = document.getElementById('confetti-canvas'); // (1) نحدد الـ canvas هنا
 
-    // (3) حلقة لتكرار الوميض عدة مرات
+    // --- كود وميض البرق (يبقى كما هو) ---
+    const flashCount = 3; 
+    const flashInterval = 120;
     for (let i = 0; i < flashCount; i++) {
         setTimeout(() => {
-            // تفعيل الوميض
             flashElement.classList.add('active');
-            
-            // إطفاء الوميض بعد فترة قصيرة جدًا
             setTimeout(() => {
                 flashElement.classList.remove('active');
-            }, 60); // مدة كل ومضة
-
-        }, i * flashInterval); // (4) تأخير كل ومضة بشكل متسلسل
+            }, 60);
+        }, i * flashInterval);
     }
-    // --- نهاية كود وميض البرق الجديد ---
 
-    // (5) تأخير إطلاق الألعاب النارية حتى ينتهي تأثير البرق بالكامل
     const totalFlashDuration = flashCount * flashInterval;
     setTimeout(() => {
-        // كل كود الألعاب النارية موجود هنا
+        // --- بداية التعديل الرئيسي هنا ---
+        
+        // (2) إظهار لوحة الألعاب النارية
+        canvas.classList.add('active');
+
         const winnerColor = winData.color || '#FFFFFF';
         fireworksSound.play().catch(e => console.log("Audio play failed:", e));
 
-        const canvas = document.getElementById('confetti-canvas');
         const fire = confetti.create(canvas, {
             resize: true,
             useWorker: true
         });
 
+        const duration = 5 * 1000;
+        const end = Date.now() + duration;
+
+        // (3) عند انتهاء مدة الألعاب النارية، نخفي الـ canvas مرة أخرى
+        setTimeout(() => {
+            canvas.classList.remove('active');
+        }, duration);
+
         // ... باقي كود الألعاب النارية لا يتغير ...
-        // ... (يستمر حتى نهاية الدالة) ...
+        (function frame() {
+            if (Date.now() > end) {
+                return;
+            }
+            // ... (يستمر حتى نهاية الدالة) ...
+        }());
 
-    }, totalFlashDuration); // (6) ننتظر حتى تنتهي كل الومضات
-
-    // ... (باقي الدالة فارغ الآن لأن كل شيء تم نقله للداخل) ...
+    }, totalFlashDuration);
 }
+
 
 
 

@@ -73,8 +73,8 @@
     .info-item a { color: var(--text); text-decoration: none; }
     .info-item a:hover { color: var(--accent); }
     #confetti-canvas, #screen-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; visibility: hidden; opacity: 0; }
-    #confetti-canvas { z-index: 121; transition: opacity 0.3s; }
-    #screen-flash { z-index: 120; background-color: white; transition: opacity 0.5s ease-out; }
+    #confetti-canvas { z-index: 120; transition: opacity 0.3s; }
+    #screen-flash { z-index: 121; background-color: white; transition: opacity 0.5s ease-out; }
     #confetti-canvas.active, #screen-flash.active { visibility: visible; opacity: 1; }
     #screen-flash.active { opacity: 0.7; }
   </style>
@@ -201,44 +201,87 @@ import { getDatabase, ref, set, onValue, update, get, child, remove } from "http
       renderHeader();
       playersEl.innerHTML = list.map((p, i) => playerCard(p, i)).join("");
     }
+    
+    
+    
+    
+    
+    
+function triggerFireworks(winData) {
+    const flashElement = document.getElementById('screen-flash');
+    const canvas = document.getElementById('confetti-canvas');
 
-    function triggerFireworks(winData) {
-        const flashElement = document.getElementById('screen-flash');
-        const canvas = document.getElementById('confetti-canvas');
-        const flashCount = 3, flashInterval = 120;
-        for (let i = 0; i < flashCount; i++) {
-            setTimeout(() => {
-                flashElement.classList.add('active');
-                setTimeout(() => { flashElement.classList.remove('active'); }, 60);
-            }, i * flashInterval);
-        }
-        const totalFlashDuration = flashCount * flashInterval;
+    // --- (1) تشغيل وميض البرق (لا يتغير) ---
+    const flashCount = 3;
+    const flashInterval = 120;
+    for (let i = 0; i < flashCount; i++) {
         setTimeout(() => {
-            canvas.classList.add('active');
-            const winnerColor = winData.color || '#FFFFFF';
-            fireworksSound.play().catch(e => {});
-            const fire = confetti.create(canvas, { resize: true, useWorker: true });
-            const duration = 5000, end = Date.now() + duration;
-            setTimeout(() => { canvas.classList.remove('active'); }, duration);
-            (function frame() {
-                if (Date.now() > end) return;
-                const bannerRect = document.getElementById('roomBanner')?.getBoundingClientRect() || { bottom: 0 };
-                fire({
-                    particleCount: 50, angle: 90, spread: 45, startVelocity: 55,
-                    origin: { x: Math.random(), y: 1 }, ticks: 150, gravity: 1,
-                    shapes: ['circle'], scalar: 0.6, colors: ['#FFFFFF', winnerColor]
-                }).then(result => {
-                    if (!result || (result.origin.y * window.innerHeight) < bannerRect.bottom) return;
-                    fire({
-                        particleCount: 800, spread: 360, startVelocity: 40, origin: result.origin,
-                        gravity: 0.4, ticks: 500, decay: 0.94, shapes: ['circle'],
-                        scalar: 2.0, colors: [winnerColor, '#FFFFFF', '#FFD700']
-                    });
-                });
-                setTimeout(frame, 500 + Math.random() * 300);
-            }());
-        }, totalFlashDuration);
+            flashElement.classList.add('active');
+            setTimeout(() => {
+                flashElement.classList.remove('active');
+            }, 60);
+        }, i * flashInterval);
     }
+
+    // --- (2) تشغيل الألعاب النارية فورًا (هنا التغيير الرئيسي) ---
+    // لقد قمنا بإزالة setTimeout الذي كان يسبب التأخير
+    
+    canvas.classList.add('active');
+    const winnerColor = winData.color || '#FFFFFF';
+    fireworksSound.play().catch(e => {});
+
+    const fire = confetti.create(canvas, { resize: true, useWorker: true });
+    const duration = 5000;
+    const end = Date.now() + duration;
+
+    // إخفاء لوحة الألعاب النارية بعد انتهاء المدة
+    setTimeout(() => {
+        canvas.classList.remove('active');
+    }, duration);
+
+    // حلقة إطلاق الصواريخ (تبقى كما هي)
+    (function frame() {
+        if (Date.now() > end) return;
+
+        const bannerRect = document.getElementById('roomBanner')?.getBoundingClientRect() || { bottom: 0 };
+
+        fire({
+            particleCount: 50,
+            angle: 90,
+            spread: 45,
+            startVelocity: 55,
+            origin: { x: Math.random(), y: 1 },
+            ticks: 150,
+            gravity: 1,
+            shapes: ['circle'],
+            scalar: 0.6,
+            colors: ['#FFFFFF', winnerColor]
+        }).then(result => {
+            if (!result || (result.origin.y * window.innerHeight) < bannerRect.bottom) return;
+            fire({
+                particleCount: 800,
+                spread: 360,
+                startVelocity: 40,
+                origin: result.origin,
+                gravity: 0.4,
+                ticks: 500,
+                decay: 0.94,
+                shapes: ['circle'],
+                scalar: 2.0,
+                colors: [winnerColor, '#FFFFFF', '#FFD700']
+            });
+        });
+
+        setTimeout(frame, 500 + Math.random() * 300);
+    }());
+}
+
+    
+    
+    
+    
+    
+    
 
     async function ensureAdminStatus(){
       if(!roomId || !adminToken) { isAdmin = false; return false; }
@@ -246,6 +289,7 @@ import { getDatabase, ref, set, onValue, update, get, child, remove } from "http
       isAdmin = !!(snap.exists() && adminToken === snap.val());
       document.getElementById('addPlayerFab').style.display = isAdmin ? 'flex' : 'none';
     }
+      
 
     function handleScoreUpdate(id, side, delta) {
         if (!isAdmin) return;

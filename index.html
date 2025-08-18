@@ -141,31 +141,26 @@ silverMedalSound.volume = 0.6;
 
 // صوت الميدالية الذهبية
 const goldMedalSound = new Audio('./gold.mp3');
+const victoryJingleSound = new Audio('./cup.mp3');
 goldMedalSound.volume = 0.6;
 
 
 // ▼▼▼ أضف هذه الدالة الجديدة والمهمة ▼▼▼
 let soundsUnlocked = false;
 function unlockSounds() {
-    if (soundsUnlocked) return; // نفذها مرة واحدة فقط
+    if (soundsUnlocked) return;
     
-    // نقوم بتشغيل كل صوت بصوت خافت جدًا ثم نوقفه فورًا
-    // هذا "يسجل" الأصوات مع المتصفح ويسمح بتشغيلها لاحقًا
-    winSound.play().catch(e => {});
-    silverMedalSound.play().catch(e => {});
-    goldMedalSound.play().catch(e => {});
-    clickSound.play().catch(e => {});
-
-    setTimeout(() => {
-        winSound.pause(); winSound.currentTime = 0;
-        silverMedalSound.pause(); silverMedalSound.currentTime = 0;
-        goldMedalSound.pause(); goldMedalSound.currentTime = 0;
-        clickSound.pause(); clickSound.currentTime = 0;
-    }, 50); // نوقفها بعد 50 مللي ثانية
+    // نقوم بتحميل الأصوات بدلاً من تشغيلها وإيقافها
+    // هذا الإجراء كافٍ لمعظم المتصفحات الحديثة "لفتح القفل"
+    winSound.load();
+    silverMedalSound.load();
+    goldMedalSound.load();
+    clickSound.load();
 
     soundsUnlocked = true;
     console.log("Audio context unlocked by user interaction.");
 }
+
 // ▲▲▲ انتهت الدالة الجديدة ▲▲▲
 
 
@@ -239,40 +234,67 @@ function unlockSounds() {
       playersEl.innerHTML = list.map((p, i) => playerCard(p, i)).join("");
     }
 
-    function triggerFireworks(winData) {
-        const flashElement = document.getElementById('screen-flash');
-        const canvas = document.getElementById('confetti-canvas');
-        const flashCount = 3, flashInterval = 120;
+function triggerFireworks(winData) {
+    const flashElement = document.getElementById('screen-flash');
+    const canvas = document.getElementById('confetti-canvas');
+
+    // --- (1) دالة الوميض المنفصلة (لإعادة الاستخدام) ---
+    function runFlashEffect() {
+        const flashCount = 3; 
+        const flashInterval = 120;
         for (let i = 0; i < flashCount; i++) {
             setTimeout(() => {
                 flashElement.classList.add('active');
                 setTimeout(() => { flashElement.classList.remove('active'); }, 60);
             }, i * flashInterval);
         }
-        canvas.classList.add('active');
-        const winnerColor = winData.color || '#FFFFFF';
-        winSound.play().catch(e => {});
-        const fire = confetti.create(canvas, { resize: true, useWorker: true });
-        const duration = 5000, end = Date.now() + duration;
-        setTimeout(() => { canvas.classList.remove('active'); }, duration);
-        (function frame() {
-            if (Date.now() > end) return;
-            const bannerRect = document.getElementById('roomBanner')?.getBoundingClientRect() || { bottom: 0 };
-            fire({
-                particleCount: 50, angle: 90, spread: 45, startVelocity: 55,
-                origin: { x: Math.random(), y: 1 }, ticks: 150, gravity: 1,
-                shapes: ['circle'], scalar: 0.6, colors: ['#FFFFFF', winnerColor]
-            }).then(result => {
-                if (!result || (bannerRect.bottom > 0 && (result.origin.y * window.innerHeight) < bannerRect.bottom)) return;
-                fire({
-                    particleCount: 800, spread: 360, startVelocity: 40, origin: result.origin,
-                    gravity: 0.4, ticks: 500, decay: 0.94, shapes: ['circle'],
-                    scalar: 2.0, colors: [winnerColor, '#FFFFFF', '#FFD700']
-                });
-            });
-            setTimeout(frame, 500 + Math.random() * 300);
-        }());
     }
+
+    // --- (2) تشغيل التأثيرات ---
+
+    // الوميض الأول والألعاب النارية يبدآن فورًا
+    runFlashEffect();
+    
+    canvas.classList.add('active');
+    const winnerColor = winData.color || '#FFFFFF';
+    
+    // تشغيل الصوتين معًا
+    winSound.play().catch(e => {});
+    victoryJingleSound.play().catch(e => {});
+
+    const fire = confetti.create(canvas, { resize: true, useWorker: true });
+    const duration = 5000;
+    const end = Date.now() + duration;
+
+    // --- (3) جدولة الوميض الثاني ---
+    // سيتم تشغيله بعد 3000 مللي ثانية (3 ثوانٍ)
+    setTimeout(runFlashEffect, 3000);
+
+    // إخفاء لوحة الألعاب النارية بعد انتهاء المدة الكاملة
+    setTimeout(() => {
+        canvas.classList.remove('active');
+    }, duration);
+
+    // حلقة إطلاق الصواريخ (تبقى كما هي)
+    (function frame() {
+        if (Date.now() > end) return;
+        const bannerRect = document.getElementById('roomBanner')?.getBoundingClientRect() || { bottom: 0 };
+        fire({
+            particleCount: 50, angle: 90, spread: 45, startVelocity: 55,
+            origin: { x: Math.random(), y: 1 }, ticks: 150, gravity: 1,
+            shapes: ['circle'], scalar: 0.6, colors: ['#FFFFFF', winnerColor]
+        }).then(result => {
+            if (!result || (bannerRect.bottom > 0 && (result.origin.y * window.innerHeight) < bannerRect.bottom)) return;
+            fire({
+                particleCount: 800, spread: 360, startVelocity: 40, origin: result.origin,
+                gravity: 0.4, ticks: 500, decay: 0.94, shapes: ['circle'],
+                scalar: 2.0, colors: [winnerColor, '#FFFFFF', '#FFD700']
+            });
+        });
+        setTimeout(frame, 500 + Math.random() * 300);
+    }());
+}
+
 
     async function ensureAdminStatus(){
       if(!roomId || !adminToken) { isAdmin = false; return false; }

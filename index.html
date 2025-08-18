@@ -125,10 +125,24 @@
     const modalRoomId = document.getElementById("modalRoomId");
     let currentTargetPlayerId = null;
 
-    const clickSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_746d063532.mp3');
-    const winSound = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c48286dec8.mp3');
-    const silverMedalSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b233f836b.mp3');
-    const goldMedalSound = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_12b0c43d0f.mp3');
+// --- الأصوات يتم تحميلها من نفس المجلد الرئيسي ---
+
+// صوت النقر العام
+const clickSound = new Audio('./click.mp3');
+clickSound.volume = 0.8;
+
+// صوت الفوز بالكأس والألعاب النارية
+const winSound = new Audio('./fireworks.mp3');
+winSound.volume = 0.7;
+
+// صوت الميدالية الفضية
+const silverMedalSound = new Audio('./silver.mp3');
+silverMedalSound.volume = 0.6;
+
+// صوت الميدالية الذهبية
+const goldMedalSound = new Audio('./gold.mp3');
+goldMedalSound.volume = 0.6;
+
 
     clickSound.volume = 0.8; winSound.volume = 0.7; silverMedalSound.volume = 0.6; goldMedalSound.volume = 0.6;
 

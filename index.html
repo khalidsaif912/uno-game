@@ -77,6 +77,20 @@
     #screen-flash { z-index: 121; background-color: white; transition: opacity 0.5s ease-out; }
     #confetti-canvas.active, #screen-flash.active { visibility: visible; opacity: 1; }
     #screen-flash.active { opacity: 0.7; }
+ 
+ 
+ 
+ 
+    
+  /* --- لمسة جمالية لنافذة إضافة اللاعبين --- */
+#playerNamesInput {
+    resize: vertical; /* تسمح للمستخدم بتكبير الحقل عموديًا فقط */
+    font-size: 16px;
+    text-align: center;
+}
+  
+    
+    
   </style>
 </head>
 <body>
@@ -96,6 +110,32 @@
   <div class="modal-backdrop" id="logModal"><div class="modal"><h3>سجل النتائج</h3><table><thead><tr><th>التاريخ</th><th>الاسم</th><th>الكؤوس</th><th>الميداليات</th></tr></thead><tbody id="logTbody"></tbody></table><div style="margin-top:10px; display:flex; justify-content:flex-end;"><button class="btn" id="closeLog">إغلاق</button></div></div></div>
   <div class="modal-backdrop" id="deleteModal"><div class="modal"><h3>تأكيد الحذف</h3><p>هل أنت متأكد من الإجراء؟</p><div class="row2"><button class="btn" id="deletePlayerBtn">🗑️ حذف اللاعب المحدد</button><button class="btn" id="deleteAllBtn" style="background-color:#ff4d4f; border-color:#ff4d4f;">💥 حذف جميع اللاعبين</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDeleteModal">إلغاء</button></div></div></div>
   <div class="modal-backdrop" id="devInfoModal"><div class="modal"><h3>معلومات المطور</h3><div class="info-item"><span>🧑‍💻</span> <b>Mr.K</b></div><div class="info-item"><span>📞</span> <a href="tel:+96899678553">99678553</a><a href="https://wa.me/96899678553" target="_blank" style="font-size: 24px; margin-right: auto;">💬</a></div><div class="info-item"><span>✉️</span> <a href="mailto:scoon80@gmail.com">scoon80@gmail.com</a></div><hr><p style="text-align:center;">شكرًا لاستخدامكم التطبيق</p><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDevInfoModal">إغلاق</button></div></div></div>
+
+<!-- ▼▼▼ أضف هذا الكود الكامل للنافذة الجديدة ▼▼▼ -->
+<div class="modal-backdrop" id="addPlayerModal">
+  <div class="modal">
+    <h3>✨ إضافة لاعبين جدد</h3>
+    <p class="subtle" style="text-align: center; margin-top: -10px; margin-bottom: 16px;">
+      أدخل أسماء اللاعبين مفصولة بمسافة أو سطر جديد.
+    </p>
+    
+    <!-- (1) استخدمنا textarea بدلاً من input للسماح بأسطر متعددة -->
+    <textarea id="playerNamesInput" class="input" rows="5" placeholder="علي ماهر معاذ..."></textarea>
+    
+    <hr>
+    
+    <div class="row2">
+      <!-- (2) زر الإضافة الرئيسي -->
+      <button class="btn" id="doAddPlayers" style="background-color: #27ae60;">✔️ إضافة</button>
+      <!-- (3) زر الإلغاء -->
+      <button class="btn" id="closeAddPlayerModal" style="background-color: #c0392b;">❌ إلغاء</button>
+    </div>
+  </div>
+</div>
+<!-- ▲▲▲ انتهى كود النافذة الجديدة ▲▲▲ -->
+
+
+
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script type="module">
@@ -330,28 +370,74 @@ function triggerFireworks(winData) {
         });
     }
 
-    async function addPlayers() {
-      if(!roomId || !isAdmin) { alert("يجب أن تكون مشرفاً في غرفة لإضافة لاعب."); return; }
-      const namesInput = prompt("أدخل أسماء اللاعبين (مفصولة بمسافة):");
-      if(!namesInput) return;
-      const names = namesInput.trim().split(/\s+/).filter(name => name.length > 0);
-      if(names.length === 0) return;
-      const playersSnap = await get(ref(db, `rooms/${roomId}/players`));
-      const players = playersSnap.exists() ? playersSnap.val() : {};
-      let usedEmojis = Object.values(players).map(p => p.character);
-      let usedColors = Object.values(players).map(p => p.color);
-      for (const name of names) {
-        let availableEmojis = ALL_EMOJIS.filter(e => !usedEmojis.includes(e));
-        if (availableEmojis.length === 0) availableEmojis = ALL_EMOJIS;
-        const char = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
-        usedEmojis.push(char);
-        let availableColors = CARD_COLORS.filter(c => !usedColors.includes(c));
-        if (availableColors.length === 0) availableColors = CARD_COLORS;
-        const color = availableColors[0];
-        usedColors.push(color);
-        await set(child(ref(db, `rooms/${roomId}/players`), makeId()), { name, left:0, right:0, character:char, color });
-      }
-    }
+
+
+// استبدل دالة addPlayers القديمة بهذه النسخة الكاملة
+async function addPlayers() {
+    // (1) تحديد عناصر النافذة الجديدة
+    const modal = document.getElementById('addPlayerModal');
+    const input = document.getElementById('playerNamesInput');
+    const addButton = document.getElementById('doAddPlayers');
+    const cancelButton = document.getElementById('closeAddPlayerModal');
+
+    // (2) إظهار النافذة للمستخدم
+    input.value = ''; // نفرغ حقل الإدخال عند كل مرة نفتح فيها النافذة
+    openModal(modal);
+
+    // (3) وظيفة زر الإلغاء
+    cancelButton.onclick = () => {
+        closeModal(modal);
+    };
+
+    // (4) وظيفة زر الإضافة الرئيسي
+    addButton.onclick = async () => {
+        if (!roomId || !isAdmin) {
+            alert("يجب أن تكون مشرفاً في غرفة لإضافة لاعب.");
+            return;
+        }
+
+        const namesInput = input.value; // نأخذ القيمة من حقل الإدخال الجديد
+        if (!namesInput) {
+            closeModal(modal); // إذا كان فارغًا، أغلق النافذة فقط
+            return;
+        }
+
+        // هذا الكود السحري يفصل الأسماء سواء كانت مفصولة بمسافة أو بسطر جديد
+        const names = namesInput.trim().split(/[\s\n]+/).filter(name => name.length > 0);
+        
+        if (names.length === 0) {
+            closeModal(modal);
+            return;
+        }
+
+        // --- هذا الجزء من الكود يبقى كما هو (منطق إضافة اللاعبين إلى Firebase) ---
+        const playersSnap = await get(ref(db, `rooms/${roomId}/players`));
+        const players = playersSnap.exists() ? playersSnap.val() : {};
+        let usedEmojis = Object.values(players).map(p => p.character);
+        let usedColors = Object.values(players).map(p => p.color);
+
+        for (const name of names) {
+            let availableEmojis = ALL_EMOJIS.filter(e => !usedEmojis.includes(e));
+            if (availableEmojis.length === 0) availableEmojis = ALL_EMOJIS;
+            const char = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
+            usedEmojis.push(char);
+
+            let availableColors = CARD_COLORS.filter(c => !usedColors.includes(c));
+            if (availableColors.length === 0) availableColors = CARD_COLORS;
+            const color = availableColors[0];
+            usedColors.push(color);
+
+            await set(child(ref(db, `rooms/${roomId}/players`), makeId()), { name, left: 0, right: 0, character: char, color });
+        }
+        // --- نهاية الجزء الذي لم يتغير ---
+
+        // (5) في النهاية، أغلق النافذة
+        closeModal(modal);
+    };
+}
+
+
+
 
     function initializeStaticEventListeners() {
         document.getElementById('addPlayerFab').addEventListener('click', () => { clickSound.play().catch(e => {}); addPlayers(); });

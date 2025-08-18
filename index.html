@@ -144,6 +144,33 @@ const goldMedalSound = new Audio('./gold.mp3');
 goldMedalSound.volume = 0.6;
 
 
+// ▼▼▼ أضف هذه الدالة الجديدة والمهمة ▼▼▼
+let soundsUnlocked = false;
+function unlockSounds() {
+    if (soundsUnlocked) return; // نفذها مرة واحدة فقط
+    
+    // نقوم بتشغيل كل صوت بصوت خافت جدًا ثم نوقفه فورًا
+    // هذا "يسجل" الأصوات مع المتصفح ويسمح بتشغيلها لاحقًا
+    winSound.play().catch(e => {});
+    silverMedalSound.play().catch(e => {});
+    goldMedalSound.play().catch(e => {});
+    clickSound.play().catch(e => {});
+
+    setTimeout(() => {
+        winSound.pause(); winSound.currentTime = 0;
+        silverMedalSound.pause(); silverMedalSound.currentTime = 0;
+        goldMedalSound.pause(); goldMedalSound.currentTime = 0;
+        clickSound.pause(); clickSound.currentTime = 0;
+    }, 50); // نوقفها بعد 50 مللي ثانية
+
+    soundsUnlocked = true;
+    console.log("Audio context unlocked by user interaction.");
+}
+// ▲▲▲ انتهت الدالة الجديدة ▲▲▲
+
+
+
+    
     clickSound.volume = 0.8; winSound.volume = 0.7; silverMedalSound.volume = 0.6; goldMedalSound.volume = 0.6;
 
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];

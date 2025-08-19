@@ -316,10 +316,16 @@
               <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
             </div>
           </div>
-          <div class="badges">
-            <span>${getMedals(p.left)}</span>
-            <div class="name">${p.name||'لاعب'}</div>
-            <span>${"🏆".repeat(p.right||0)}</span>
+         <div class="center-col">
+  <div class="emoji">
+    <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
+  </div>
+  <div class="badges">
+    <span>${getMedals(p.left)}</span>
+    <span>${"🏆".repeat(p.right||0)}</span>
+  </div>
+  <div class="name">${p.name||'لاعب'}</div>
+</div>
           </div>
         </div>`;
     }

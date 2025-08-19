@@ -43,7 +43,9 @@
       cursor: pointer; transition: all 0.2s ease; position: relative;
     }
     .score-card:hover {
-      background-color: rgba(255,255,255,0.1); transform: scale(1.05);
+      background-color: rgba(255,255,255,0.1); 
+      transform: scale(1.05);
+      border-color: rgba(255,255,255,0.3);
     }
     .score-card:active {
       transform: scale(0.95);
@@ -52,22 +54,24 @@
     .score-card::before {
       content: '+';
       position: absolute;
-      top: 2px;
+      top: 4px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 14px;
-      opacity: 0.5;
+      opacity: 0.4;
       font-weight: bold;
+      color: #4CAF50;
     }
     .score-card::after {
       content: '−';
       position: absolute;
-      bottom: 2px;
+      bottom: 4px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 16px;
-      opacity: 0.5;
+      opacity: 0.4;
       font-weight: bold;
+      color: #f44336;
     }
     .center-col { text-align: center; }
     .emoji { font-size: 52px; line-height: 1; cursor: pointer; }
@@ -185,13 +189,10 @@
     // الأصوات
     const clickSound = new Audio('./click.mp3');
     clickSound.volume = 0.8;
-
     const winSound = new Audio('./fireworks.mp3');
     winSound.volume = 0.7;
-
     const silverMedalSound = new Audio('./silver.mp3');
     silverMedalSound.volume = 0.6;
-
     const goldMedalSound = new Audio('./gold.mp3');
     const victoryJingleSound = new Audio('./cup.mp3');
     goldMedalSound.volume = 0.6;
@@ -200,33 +201,20 @@
     let soundsUnlocked = false;
     function unlockSounds() {
         if (soundsUnlocked) return;
-        
         winSound.load();
         silverMedalSound.load();
         goldMedalSound.load();
         clickSound.load();
-
         soundsUnlocked = true;
         console.log("Audio context unlocked by user interaction.");
     }
-
-    clickSound.volume = 0.8; winSound.volume = 0.7; silverMedalSound.volume = 0.6; goldMedalSound.volume = 0.6;
 
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];
     const CARD_COLORS = ["#8e44ad", "#e67e22", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#16a085"];
 
     const ALL_CHARACTERS = [
-      "images/uno1.png",
-      "images/uno2.png",
-      "images/uno3.png",
-      "images/uno4.png",
-      "images/uno5.png",
-      "images/uno6.png",
-      "images/uno7.png",
-      "images/uno8.png",
-      "images/uno9.png",
-      "images/uno10.png",
-      "images/uno11.png"
+      "images/uno1.png", "images/uno2.png", "images/uno3.png", "images/uno4.png", "images/uno5.png",
+      "images/uno6.png", "images/uno7.png", "images/uno8.png", "images/uno9.png", "images/uno10.png", "images/uno11.png"
     ];
 
     const makeId = () => Math.random().toString(36).slice(2, 8);
@@ -282,10 +270,30 @@
         };
     }
 
+    // دالة جديدة لإنشاء بطاقة اللاعب بدون أزرار
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
-      return `<div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};"><div class="card-body"><div class="score-area"><div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div></div><div class="center-col"><div class="emoji"><img src="${p.character||'images/uno1.png'}" class="avatar" alt="char"></div>
-<div class="name">${p.name||'لاعب'}</div></div><div class="score-area"><div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div></div></div><div class="badges"><span>${getMedals(p.left)}</span><span>${"🏆".repeat(p.right||0)}</span></div></div>`;
+      return `
+        <div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};">
+          <div class="card-body">
+            <div class="score-area">
+              <div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div>
+            </div>
+            <div class="center-col">
+              <div class="emoji">
+                <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
+              </div>
+              <div class="name">${p.name||'لاعب'}</div>
+            </div>
+            <div class="score-area">
+              <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
+            </div>
+          </div>
+          <div class="badges">
+            <span>${getMedals(p.left)}</span>
+            <span>${"🏆".repeat(p.right||0)}</span>
+          </div>
+        </div>`;
     }
 
     function renderPlayers(list){
@@ -309,7 +317,6 @@
         }
 
         runFlashEffect();
-        
         canvas.classList.add('active');
         const winnerColor = winData.color || '#FFFFFF';
         
@@ -321,10 +328,7 @@
         const end = Date.now() + duration;
 
         setTimeout(runFlashEffect, 3000);
-
-        setTimeout(() => {
-            canvas.classList.remove('active');
-        }, duration);
+        setTimeout(() => { canvas.classList.remove('active'); }, duration);
 
         (function frame() {
             if (Date.now() > end) return;
@@ -388,9 +392,7 @@
         input.value = '';
         openModal(modal);
 
-        cancelButton.onclick = () => {
-            closeModal(modal);
-        };
+        cancelButton.onclick = () => { closeModal(modal); };
 
         addButton.onclick = async () => {
             if (!roomId || !isAdmin) {
@@ -399,17 +401,10 @@
             }
 
             const namesInput = input.value;
-            if (!namesInput) {
-                closeModal(modal);
-                return;
-            }
+            if (!namesInput) { closeModal(modal); return; }
 
             const names = namesInput.trim().split(/[\s\n]+/).filter(name => name.length > 0);
-            
-            if (names.length === 0) {
-                closeModal(modal);
-                return;
-            }
+            if (names.length === 0) { closeModal(modal); return; }
 
             const playersSnap = await get(ref(db, `rooms/${roomId}/players`));
             const players = playersSnap.exists() ? playersSnap.val() : {};
@@ -420,7 +415,6 @@
                 let availableChars = ALL_CHARACTERS.filter(c => !usedEmojis.includes(c));
                 if (availableChars.length === 0) availableChars = ALL_CHARACTERS;
                 const char = availableChars[Math.floor(Math.random() * availableChars.length)];
-
                 usedEmojis.push(char);
 
                 let availableColors = CARD_COLORS.filter(c => !usedColors.includes(c));
@@ -430,7 +424,6 @@
 
                 await set(child(ref(db, `rooms/${roomId}/players`), makeId()), { name, left: 0, right: 0, character: char, color });
             }
-
             closeModal(modal);
         };
     }
@@ -505,7 +498,7 @@
     function initializeDynamicEventListeners() {
         let longPressTimer, isLongPress = false, touchEventDetected = false;
         
-        // معالج الضغط على الأرقام
+        // معالج الضغط الجديد على الأرقام مباشرة
         playersEl.addEventListener('click', (e) => {
             unlockSounds();
             
@@ -517,8 +510,7 @@
                 const clickY = e.clientY - rect.top;
                 const cardHeight = rect.height;
                 
-                // إذا كان الضغط في النصف العلوي، زيادة (+1)
-                // إذا كان في النصف السفلي، تقليل (-1)
+                // إذا كان الضغط في النصف العلوي (+), إذا كان في النصف السفلي (-)
                 const delta = clickY < cardHeight / 2 ? 1 : -1;
                 
                 handleScoreUpdate(playerId, side, delta);
@@ -526,7 +518,7 @@
             }
         });
 
-        // معالج الضغط المطول على الصورة لحذف اللاعب
+        // معالج الضغط المطول على صورة اللاعب لحذفه
         const handlePress = (target) => {
             if (!isAdmin) return;
             const emojiEl = target.closest('.emoji');

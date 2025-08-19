@@ -286,9 +286,9 @@
               <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
             </div>
           </div>
-          <div class="name">${p.name||'لاعب'}</div>
           <div class="badges">
             <span>${getMedals(p.left)}</span>
+            <div class="name">${p.name||'لاعب'}</div>
             <span>${"🏆".repeat(p.right||0)}</span>
           </div>
         </div>`;

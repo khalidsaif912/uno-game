@@ -501,6 +501,17 @@
         playersEl.addEventListener('click', (e) => {
             unlockSounds();
             
+            // تجاهل الضغط إذا كان ضغط طويل
+            if (isLongPress) {
+                isLongPress = false;
+                return;
+            }
+            
+            // تجاهل الضغط على الصورة (مخصص للحذف)
+            if (e.target.closest('.emoji')) {
+                return;
+            }
+            
             const card = e.target.closest('.card');
             if (card && isAdmin) {
                 const playerId = card.dataset.playerId;
@@ -546,6 +557,7 @@
             clearTimeout(longPressTimer);
         };
 
+        // إضافة معالجات منفصلة للصورة
         playersEl.addEventListener('touchstart', (e) => { 
             touchEventDetected = true; 
             handlePress(e.target); 
@@ -566,7 +578,10 @@
             handleRelease(); 
         });
 
-        const cancelPress = () => clearTimeout(longPressTimer);
+        const cancelPress = () => {
+            clearTimeout(longPressTimer);
+            isLongPress = false;
+        };
         playersEl.addEventListener('touchcancel', cancelPress);
         playersEl.addEventListener('mouseleave', cancelPress);
     }

@@ -40,7 +40,8 @@
       background-color: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 3px;
       font-size: 24px; font-weight: 900; text-align: center; min-width: 40px;
       border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-      cursor: pointer; transition: all 0.2s ease; position: relative;
+      transition: all 0.2s ease; position: relative;
+      pointer-events: none;
     }
     .score-card:hover {
       background-color: rgba(255,255,255,0.1); 
@@ -112,8 +113,8 @@
   
     /* صور اللاعبين (أفاتار) */
     .avatar {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
       background: transparent;
     }
@@ -496,17 +497,29 @@
     function initializeDynamicEventListeners() {
         let longPressTimer, isLongPress = false, touchEventDetected = false;
         
-        // معالج الضغط الجديد على الأرقام مباشرة
+        // معالج الضغط الجديد على بطاقة اللاعب
         playersEl.addEventListener('click', (e) => {
             unlockSounds();
             
-            const scoreCard = e.target.closest('.score-card');
-            if (scoreCard && isAdmin) {
-                const playerId = scoreCard.dataset.playerId;
-                const side = scoreCard.dataset.side;
-                const rect = scoreCard.getBoundingClientRect();
+            const card = e.target.closest('.card');
+            if (card && isAdmin) {
+                const playerId = card.dataset.playerId;
+                const rect = card.getBoundingClientRect();
                 const clickY = e.clientY - rect.top;
                 const cardHeight = rect.height;
+                
+                // تحديد أي رقم يتم تعديله حسب موقع الضغط الأفقي
+                const clickX = e.clientX - rect.left;
+                const cardWidth = rect.width;
+                
+                let side;
+                if (clickX < cardWidth / 3) {
+                    side = 'left'; // الجانب الأيسر للميداليات
+                } else if (clickX > (cardWidth * 2) / 3) {
+                    side = 'right'; // الجانب الأيمن للكؤوس
+                } else {
+                    return; // الوسط - لا نفعل شيء
+                }
                 
                 // إذا كان الضغط في النصف العلوي (+), إذا كان في النصف السفلي (-)
                 const delta = clickY < cardHeight / 2 ? 1 : -1;

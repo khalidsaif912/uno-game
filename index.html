@@ -553,17 +553,18 @@
             clearTimeout(longPressTimer);
         };
 
-        // منع النافذة المنبثقة للصور
+        // منع النافذة المنبثقة للصور فقط
         playersEl.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            return false;
+            if (e.target.closest('.avatar')) {
+                e.preventDefault();
+                return false;
+            }
         });
 
         playersEl.addEventListener('touchstart', (e) => { 
-            e.preventDefault(); // منع النافذة المنبثقة
             touchEventDetected = true; 
             handlePress(e.target); 
-        }, { passive: false });
+        }, { passive: true });
         
         playersEl.addEventListener('touchend', (e) => { 
             if (!touchEventDetected) return; 

@@ -506,23 +506,20 @@
                 const playerId = card.dataset.playerId;
                 const rect = card.getBoundingClientRect();
                 const clickY = e.clientY - rect.top;
-                const cardHeight = rect.height;
-                
-                // تحديد أي رقم يتم تعديله حسب موقع الضغط الأفقي
                 const clickX = e.clientX - rect.left;
+                const cardHeight = rect.height;
                 const cardWidth = rect.width;
                 
-                let side;
-                if (clickX < cardWidth / 3) {
-                    side = 'left'; // الجانب الأيسر للميداليات
-                } else if (clickX > (cardWidth * 2) / 3) {
-                    side = 'right'; // الجانب الأيمن للكؤوس
-                } else {
-                    return; // الوسط - لا نفعل شيء
-                }
-                
-                // إذا كان الضغط في النصف العلوي (+), إذا كان في النصف السفلي (-)
+                // تحديد المنطقة: نصف البطاقة العلوي للزيادة، النصف السفلي للتقليل
                 const delta = clickY < cardHeight / 2 ? 1 : -1;
+                
+                // تحديد أي رقم يتم تعديله حسب موقع الضغط الأفقي
+                let side;
+                if (clickX < cardWidth / 2) {
+                    side = 'left'; // النصف الأيسر للميداليات
+                } else {
+                    side = 'right'; // النصف الأيمن للكؤوس
+                }
                 
                 handleScoreUpdate(playerId, side, delta);
                 clickSound.play().catch(e => {});

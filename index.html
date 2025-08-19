@@ -513,12 +513,13 @@
                 // تحديد المنطقة: نصف البطاقة العلوي للزيادة، النصف السفلي للتقليل
                 const delta = clickY < cardHeight / 2 ? 1 : -1;
                 
-                // تحديد أي رقم يتم تعديله حسب موقع الضغط الأفقي
+                // تصحيح: الترتيب حسب موقع الأرقام في الأعلى
+                // left على اليسار، right على اليمين
                 let side;
                 if (clickX < cardWidth / 2) {
-                    side = 'left'; // النصف الأيسر للميداليات
+                    side = 'left'; // اليسار = الميداليات (left)
                 } else {
-                    side = 'right'; // النصف الأيمن للكؤوس
+                    side = 'right'; // اليمين = الكؤوس (right)
                 }
                 
                 handleScoreUpdate(playerId, side, delta);

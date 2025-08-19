@@ -117,6 +117,9 @@
       height: 100px;
       object-fit: cover;
       background: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -135,7 +138,7 @@
   <!-- Modals -->
   <div class="modal-backdrop" id="roomModal"><div class="modal"><div id="roomManagementView"><h3>إدارة الغرفة</h3><div class="room-info" id="roomInfoBlock">رمز الغرفة الحالي: <span id="modalRoomId"></span></div><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="openLog">📜 عرض السجل</button><button class="btn" id="copyLinkBtn">🔗 نسخ رابط المشاهدة</button></div><hr><div class="row2"><button class="btn" id="doCreate">🚀 إنشاء غرفة جديدة</button><button class="btn" id="showJoinView">🚪 الانضمام لغرفة أخرى</button></div></div><div id="joinView" style="display: none;"><h3>الانضمام لغرفة</h3><div style="display:flex; gap:6px; align-items:center;"><input type="text" id="joinId" class="input" placeholder="أدخل رمز الغرفة" /><button class="btn" id="doJoin">دخول</button></div><button class="btn" id="backToManagement" style="margin-top: 10px; background: #2a3257;">رجوع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeRoomModal">إغلاق</button></div></div></div>
   <div class="modal-backdrop" id="logModal"><div class="modal"><h3>سجل النتائج</h3><table><thead><tr><th>التاريخ</th><th>الاسم</th><th>الكؤوس</th><th>الميداليات</th></tr></thead><tbody id="logTbody"></tbody></table><div style="margin-top:10px; display:flex; justify-content:flex-end;"><button class="btn" id="closeLog">إغلاق</button></div></div></div>
-  <div class="modal-backdrop" id="deleteModal"><div class="modal"><h3>تأكيد الحذف</h3><p>هل أنت متأكد من الإجراء؟</p><div class="row2"><button class="btn" id="deletePlayerBtn">🗑️ حذف اللاعب المحدد</button><button class="btn" id="deleteAllBtn" style="background-color:#ff4d4f; border-color:#ff4d4f;">💥 حذف جميع اللاعبين</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDeleteModal">إلغاء</button></div></div></div>
+  <div class="modal-backdrop" id="deleteModal"><div class="modal"><h3>🗑️ تأكيد الحذف</h3><p style="text-align: center; margin: 16px 0; color: var(--muted);">هل أنت متأكد من حذف هذا اللاعب؟</p><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="deletePlayerBtn" style="background-color: #e74c3c; color: white;">حذف اللاعب</button><button class="btn" id="deleteAllBtn" style="background-color: #c0392b; color: white;">حذف الجميع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDeleteModal" style="background: #2a3257; color: white;">إلغاء</button></div></div></div>
   <div class="modal-backdrop" id="devInfoModal"><div class="modal"><h3>معلومات المطور</h3><div class="info-item"><span>🧑‍💻</span> <b>Mr.K</b></div><div class="info-item"><span>📞</span> <a href="tel:+96899678553">99678553</a><a href="https://wa.me/96899678553" target="_blank" style="font-size: 24px; margin-right: auto;">💬</a></div><div class="info-item"><span>✉️</span> <a href="mailto:scoon80@gmail.com">scoon80@gmail.com</a></div><hr><p style="text-align:center;">شكرًا لاستخدامكم التطبيق</p><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDevInfoModal">إغلاق</button></div></div></div>
 
   <!-- نافذة إضافة اللاعبين -->
@@ -507,11 +510,6 @@
                 return;
             }
             
-            // تجاهل الضغط على الصورة (مخصص للحذف)
-            if (e.target.closest('.emoji')) {
-                return;
-            }
-            
             const card = e.target.closest('.card');
             if (card && isAdmin) {
                 const playerId = card.dataset.playerId;
@@ -525,7 +523,6 @@
                 const delta = clickY < cardHeight / 2 ? 1 : -1;
                 
                 // تصحيح المنطق للاتجاه RTL
-                // في RTL: اليسار بصرياً = right في الكود، اليمين بصرياً = left في الكود
                 let side;
                 if (clickX < cardWidth / 2) {
                     side = 'right'; // النصف الأيسر بصرياً = الكؤوس (right)
@@ -538,18 +535,17 @@
             }
         });
 
-        // معالج الضغط المطول على صورة اللاعب لحذفه
+        // معالج الضغط المطول على أي مكان في البطاقة لحذف اللاعب
         const handlePress = (target) => {
             if (!isAdmin) return;
-            const emojiEl = target.closest('.emoji');
-            if (emojiEl) {
+            const card = target.closest('.card');
+            if (card) {
                 isLongPress = false;
-                const card = emojiEl.closest('.card');
                 currentTargetPlayerId = card.dataset.playerId;
                 longPressTimer = setTimeout(() => { 
                     isLongPress = true; 
                     openModal(document.getElementById('deleteModal')); 
-                }, 800);
+                }, 1000); // زيادة الوقت قليلاً لتجنب الفتح بالخطأ
             }
         };
         
@@ -557,11 +553,17 @@
             clearTimeout(longPressTimer);
         };
 
-        // إضافة معالجات منفصلة للصورة
+        // منع النافذة المنبثقة للصور
+        playersEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
         playersEl.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); // منع النافذة المنبثقة
             touchEventDetected = true; 
             handlePress(e.target); 
-        }, { passive: true });
+        }, { passive: false });
         
         playersEl.addEventListener('touchend', (e) => { 
             if (!touchEventDetected) return; 
@@ -583,6 +585,7 @@
             isLongPress = false;
         };
         playersEl.addEventListener('touchcancel', cancelPress);
+        playersEl.addEventListener('touchmove', cancelPress); // إلغاء عند الحركة
         playersEl.addEventListener('mouseleave', cancelPress);
     }
 

@@ -42,7 +42,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 2;
+      z-index: 10;
+      pointer-events: none;
     }
     
     .player-name-section {
@@ -55,6 +56,8 @@
       padding: 6px 12px;
       border-radius: 8px;
       width: fit-content;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
     }
     
     .game-icon {
@@ -215,7 +218,7 @@
       pointer-events: none;
       border-radius: 15px;
       position: relative;
-      z-index: 1;
+      z-index: 5;
     }
     
     .center-col { 
@@ -225,7 +228,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      z-index: 1;
+      z-index: 5;
     }
   </style>
 </head>

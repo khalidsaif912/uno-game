@@ -39,7 +39,7 @@
     .card-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       width: 100%;
       margin-bottom: 4px;
     }
@@ -68,7 +68,7 @@
     .card-body {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       width: 100%;
       gap: 8px;
       margin-bottom: 0;
@@ -86,7 +86,7 @@
     }
     
     .score-area.right {
-      flex-direction: row-reverse; /* الكأس على اليمين، الرقم على اليسار */
+      flex-direction: row; /* الرقم على اليسار، الكأس على اليمين */
     }
     .score-card {
       background-color: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 8px;
@@ -369,7 +369,7 @@
         };
     }
 
-    // دالة إنشاء بطاقة اللاعب - تصميم نهائي مع تخطيط أفقي
+    // دالة إنشاء بطاقة اللاعب - تخطيط مع الأفاتار في الوسط
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
       // تحديد أيقونة الميدالية (ذهبية أم فضية)
@@ -380,11 +380,6 @@
       return `
         <div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};">
           <div class="card-header">
-            <div class="center-col">
-              <div class="emoji">
-                <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
-              </div>
-            </div>
             <div class="player-name-section" style="background-color: ${shadowColor};">
               <span class="game-icon">🎮</span>
               <span>${p.name||'لاعب'}</span>
@@ -395,9 +390,14 @@
               <span class="score-icon">${medalIcon}</span>
               <div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div>
             </div>
+            <div class="center-col">
+              <div class="emoji">
+                <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
+              </div>
+            </div>
             <div class="score-area right">
-              <span class="score-icon">🏆</span>
               <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
+              <span class="score-icon">🏆</span>
             </div>
           </div>
         </div>`;

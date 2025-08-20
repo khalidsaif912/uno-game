@@ -171,16 +171,99 @@
     hr { border-color: #2a32573d; margin: 16px 0; }
     .btn { border-radius: 999px; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s ease; cursor: pointer; padding: 10px 14px; }
     .btn:hover { transform: translateY(-2px); }
-    .add-player-fab, .corner-btn { position: fixed; bottom: 20px; border-radius: 999px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; transition: transform 0.2s ease; z-index: 30; }
-    .add-player-fab { left: 50%; transform: translateX(-50%); background-color: #6c5ce7; color: white; padding: 12px 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .add-player-fab, .corner-btn { 
+      position: fixed; bottom: 20px; border-radius: 999px; border: none; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; 
+      transition: transform 0.2s ease; z-index: 30;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+    }
+    .add-player-fab { left: 50%; transform: translateX(-50%); padding: 12px 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .add-player-fab:hover { transform: translateX(-50%) translateY(-2px); }
-    .corner-btn { color: white; padding: 10px 20px; font-size: 14px; display: grid; place-items: center; }
+    .corner-btn { padding: 10px 20px; font-size: 14px; display: grid; place-items: center; }
     .corner-btn:hover { transform: translateY(-2px); }
-    #devInfoBtn { left: 20px; background: #e74c3c; }
-    #refreshBtn { right: 20px; background: #3498db; }
+    #devInfoBtn { left: 20px; }
+    #refreshBtn { right: 20px; }
     .info-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .info-item a { color: var(--text); text-decoration: none; }
     .info-item a:hover { color: var(--accent); }
+    /* Log Page Styles */
+    .log-page {
+      width: 95vw;
+      height: 95vh;
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+    }
+    
+    .log-header h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: 24px;
+    }
+    
+    .log-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .log-btn {
+      background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .log-content {
+      flex: 1;
+      overflow: auto;
+    }
+    
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+    
+    .log-table th {
+      background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      font-weight: bold;
+    }
+    
+    .log-table td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .log-table tr:nth-child(even) td {
+      background: rgba(255,255,255,0.08);
+    }
+    
     #confetti-canvas, #screen-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; visibility: hidden; opacity: 0; }
     #confetti-canvas { z-index: 120; transition: opacity 0.3s; }
     #screen-flash { z-index: 121; background-color: white; transition: opacity 0.5s ease-out; }
@@ -237,7 +320,44 @@
 
   <!-- Modals -->
   <div class="modal-backdrop" id="roomModal"><div class="modal"><div id="roomManagementView"><h3>إدارة الغرفة</h3><div class="room-info" id="roomInfoBlock">رمز الغرفة الحالي: <span id="modalRoomId"></span></div><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="openLog">📜 عرض السجل</button><button class="btn" id="copyLinkBtn">🔗 نسخ رابط المشاهدة</button></div><hr><div class="row2"><button class="btn" id="doCreate">🚀 إنشاء غرفة جديدة</button><button class="btn" id="showJoinView">🚪 الانضمام لغرفة أخرى</button></div></div><div id="joinView" style="display: none;"><h3>الانضمام لغرفة</h3><div style="display:flex; gap:6px; align-items:center;"><input type="text" id="joinId" class="input" placeholder="أدخل رمز الغرفة" /><button class="btn" id="doJoin">دخول</button></div><button class="btn" id="backToManagement" style="margin-top: 10px; background: #2a3257;">رجوع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeRoomModal">إغلاق</button></div></div></div>
-  <div class="modal-backdrop" id="logModal"><div class="modal"><h3>سجل النتائج</h3><table><thead><tr><th>التاريخ</th><th>الاسم</th><th>الكؤوس</th><th>الميداليات</th></tr></thead><tbody id="logTbody"></tbody></table><div style="margin-top:10px; display:flex; justify-content:flex-end;"><button class="btn" id="closeLog">إغلاق</button></div></div></div>
+  <!-- Log Page -->
+  <div class="modal-backdrop" id="logPage" style="display: none;">
+    <div class="log-page">
+      <div class="log-header">
+        <h2>📊 سجل النتائج</h2>
+        <div class="log-actions">
+          <button class="btn log-btn" id="clearLogBtn">🗑️ مسح السجل</button>
+          <button class="btn log-btn" id="closeLogPage">✖️ إغلاق</button>
+        </div>
+      </div>
+      <div class="log-content">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>📅 التاريخ</th>
+              <th>👤 الاسم</th>
+              <th>🏆 الكؤوس</th>
+              <th>🥈 الميداليات الفضية</th>
+              <th>🥇 الميداليات الذهبية</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Log Confirmation -->
+  <div class="modal-backdrop" id="clearLogModal">
+    <div class="modal">
+      <h3>🗑️ تأكيد مسح السجل</h3>
+      <p style="text-align: center; margin: 16px 0; color: var(--muted);">هل أنت متأكد من حذف جميع السجلات نهائياً؟</p>
+      <div class="row2">
+        <button class="btn" id="confirmClearLog" style="background-color: #e74c3c; color: white;">✔️ نعم، احذف</button>
+        <button class="btn" id="cancelClearLog" style="background: #2a3257; color: white;">❌ إلغاء</button>
+      </div>
+    </div>
+  </div>
   <div class="modal-backdrop" id="deleteModal"><div class="modal"><h3>🗑️ تأكيد الحذف</h3><p style="text-align: center; margin: 16px 0; color: var(--muted);">هل أنت متأكد من حذف هذا اللاعب؟</p><div class="row2" style="margin-bottom: 10px;"><button class="btn" id="deletePlayerBtn" style="background-color: #e74c3c; color: white;">حذف اللاعب</button><button class="btn" id="deleteAllBtn" style="background-color: #c0392b; color: white;">حذف الجميع</button></div><hr><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDeleteModal" style="background: #2a3257; color: white;">إلغاء</button></div></div></div>
   <div class="modal-backdrop" id="devInfoModal"><div class="modal"><h3>معلومات المطور</h3><div class="info-item"><span>🧑‍💻</span> <b>Mr.K</b></div><div class="info-item"><span>📞</span> <a href="tel:+96899678553">99678553</a><a href="https://wa.me/96899678553" target="_blank" style="font-size: 24px; margin-right: auto;">💬</a></div><div class="info-item"><span>✉️</span> <a href="mailto:scoon80@gmail.com">scoon80@gmail.com</a></div><hr><p style="text-align:center;">شكرًا لاستخدامكم التطبيق</p><div style="display:flex; justify-content:flex-end;"><button class="btn" id="closeDevInfoModal">إغلاق</button></div></div></div>
 
@@ -473,8 +593,23 @@
             const newValue = Math.max(0, oldValue + delta);
             let updates = {};
             updates[`players/${id}/${side}`] = newValue;
-            const date = todayTag();
-            updates[`scoreLog/${date}_${p.name}`] = { date, name: p.name, wins: side === 'right' ? newValue : p.right || 0, medals: side === 'left' ? newValue : p.left || 0 };
+            
+            // تسجيل فقط المركز الأول (الكؤوس)
+            if (side === 'right' && delta > 0 && newValue > oldValue) {
+                const date = todayTag();
+                const silverMedals = p.left || 0;
+                const goldMedals = Math.floor(silverMedals / 5);
+                const remainingSilver = silverMedals % 5;
+                
+                updates[`winnerLog/${date}_${p.name}`] = { 
+                    date, 
+                    name: p.name, 
+                    cups: newValue,
+                    silverMedals: remainingSilver,
+                    goldMedals: goldMedals
+                };
+            }
+            
             if (delta > 0) {
                 if (side === 'left') {
                     const oldGoldCount = Math.floor(oldValue / 5);
@@ -543,16 +678,39 @@
         document.getElementById("openLog").addEventListener('click', () => {
             clickSound.play().catch(e => {});
             closeModal(document.getElementById('roomModal'));
-            const tbody = document.getElementById("logTbody");
-            onValue(ref(db, `rooms/${roomId}/scoreLog`), (snap) => {
-                if(!snap.exists()){ tbody.innerHTML = `<tr><td colspan="4" class="subtle">لا توجد سجلات بعد</td></tr>`; return; }
+            openModal(document.getElementById('logPage'));
+            
+            // تحديث جدول السجل
+            onValue(ref(db, `rooms/${roomId}/winnerLog`), (snap) => {
+                const tbody = document.getElementById("logTableBody");
+                if(!snap.exists()){ 
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 20px;">لا توجد سجلات بعد</td></tr>`; 
+                    return; 
+                }
                 const list = Object.values(snap.val());
                 list.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-                tbody.innerHTML = list.map(e=>`<tr><td>${e.date}</td><td>${e.name}</td><td>${e.wins||0}</td><td>${e.medals||0}</td></tr>`).join("");
+                tbody.innerHTML = list.map(e=>`
+                    <tr>
+                        <td>${e.date}</td>
+                        <td>${e.name}</td>
+                        <td>${e.cups||0}</td>
+                        <td>${e.silverMedals||0}</td>
+                        <td>${e.goldMedals||0}</td>
+                    </tr>
+                `).join("");
             }, { onlyOnce: true });
-            openModal(document.getElementById('logModal'));
         });
-        document.getElementById("closeLog").addEventListener('click', () => { clickSound.play().catch(e => {}); closeModal(document.getElementById('logModal')); });
+        document.getElementById("closeLogPage").addEventListener('click', () => { clickSound.play().catch(e => {}); closeModal(document.getElementById('logPage')); });
+        document.getElementById("clearLogBtn").addEventListener('click', () => { clickSound.play().catch(e => {}); openModal(document.getElementById('clearLogModal')); });
+        document.getElementById("confirmClearLog").addEventListener('click', () => {
+            clickSound.play().catch(e => {});
+            if (roomId) {
+                remove(ref(db, `rooms/${roomId}/winnerLog`));
+            }
+            closeModal(document.getElementById('clearLogModal'));
+            closeModal(document.getElementById('logPage'));
+        });
+        document.getElementById("cancelClearLog").addEventListener('click', () => { clickSound.play().catch(e => {}); closeModal(document.getElementById('clearLogModal')); });
         document.getElementById("closeDeleteModal").addEventListener('click', () => { clickSound.play().catch(e => {}); closeModal(document.getElementById('deleteModal')); });
         document.getElementById("closeDevInfoModal").addEventListener('click', () => { clickSound.play().catch(e => {}); closeModal(document.getElementById('devInfoModal')); });
         document.getElementById('showJoinView').addEventListener('click', () => { clickSound.play().catch(e => {}); document.getElementById('roomManagementView').style.display = 'none'; document.getElementById('joinView').style.display = 'block'; });

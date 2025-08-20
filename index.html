@@ -33,7 +33,7 @@
     .card {
       border-radius:16px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       position: relative; user-select: none; border: 1px solid rgba(255, 255, 255, 0.1);
-      min-height: 160px; display: flex; flex-direction: column; align-items: center;
+      min-height: 140px; display: flex; flex-direction: column; align-items: center;
       justify-content: center;
     }
     
@@ -53,10 +53,11 @@
       font-weight: bold;
       font-size: 16px;
       color: var(--text);
-      padding: 6px 12px;
+      padding: 4px 8px;
       border-radius: 8px;
       width: fit-content;
-      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.2);
     }
     
@@ -99,12 +100,12 @@
     .score-card {
       background: rgba(255,255,255,0.15); 
       backdrop-filter: blur(10px);
-      border-radius: 12px; 
-      padding: 8px 12px;
+      border-radius: 8px; 
+      padding: 6px 10px;
       font-size: 24px; 
       font-weight: 900; 
       text-align: center; 
-      min-width: 50px;
+      min-width: 40px;
       border: 1px solid rgba(255,255,255,0.2); 
       box-shadow: 0 8px 32px rgba(0,0,0,0.1);
       transition: all 0.2s ease; 
@@ -370,13 +371,11 @@
         };
     }
 
-    // دالة إنشاء بطاقة اللاعب - ترتيب صحيح للميدالية والكأس
+    // دالة إنشاء بطاقة اللاعب - تصميم نهائي نظيف
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
       // تحديد أيقونة الميدالية (ذهبية أم فضية)
       const medalIcon = (p.left >= 5) ? "🥇" : "🥈";
-      // لون التضليل الغامق من نفس لون الكرة
-      const shadowColor = hexToRgba(cardColor, 0.5);
       
       return `
         <div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};">
@@ -396,8 +395,7 @@
             </div>
           </div>
           <div class="card-header">
-            <div class="player-name-section" style="background-color: ${shadowColor};">
-              <span class="game-icon">🎮</span>
+            <div class="player-name-section">
               <span>${p.name||'لاعب'}</span>
             </div>
           </div>

@@ -31,9 +31,9 @@
     .title .badge { font-size: 11px; color: var(--text); background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 999px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
     .card {
-      border-radius:16px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      border-radius:16px; padding: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       position: relative; user-select: none; border: 1px solid rgba(255, 255, 255, 0.1);
-      min-height: 160px; display: flex; flex-direction: column; align-items: center;
+      min-height: 140px; display: flex; flex-direction: column; align-items: center;
     }
     
     .card-header {
@@ -43,8 +43,9 @@
       gap: 6px;
       width: 100%;
       margin-bottom: 8px;
-      border-bottom: 2px solid rgba(255,255,255,0.2);
-      padding-bottom: 6px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px 8px;
+      border-radius: 8px;
     }
     
     .player-name-section {
@@ -71,7 +72,7 @@
       justify-content: space-between;
       width: 100%;
       gap: 12px;
-      margin-bottom: 4px;
+      margin-bottom: 0;
     }
     
     .score-area { 
@@ -86,7 +87,7 @@
     }
     
     .score-area.right {
-      flex-direction: row; /* الكأس على اليسار، الرقم على اليمين */
+      flex-direction: row-reverse; /* الكأس على اليمين، الرقم على اليسار */
     }
     .score-card {
       background-color: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 8px;
@@ -201,8 +202,8 @@
   
     /* صور اللاعبين (أفاتار) */
     .avatar {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
       background: transparent;
       -webkit-touch-callout: none;
@@ -369,9 +370,12 @@
         };
     }
 
-    // دالة إنشاء بطاقة اللاعب - أيقونات ثابتة مع أرقام متغيرة
+    // دالة إنشاء بطاقة اللاعب - تصميم مضغوط مع أيقونات ثابتة
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
+      // تحديد أيقونة الميدالية (ذهبية أم فضية)
+      const medalIcon = (p.left >= 5) ? "🥇" : "🥈";
+      
       return `
         <div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};">
           <div class="card-header">
@@ -382,7 +386,7 @@
           </div>
           <div class="card-body">
             <div class="score-area left">
-              <span class="score-icon">🥈</span>
+              <span class="score-icon">${medalIcon}</span>
               <div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div>
             </div>
             <div class="center-col">
@@ -391,8 +395,8 @@
               </div>
             </div>
             <div class="score-area right">
-              <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
               <span class="score-icon">🏆</span>
+              <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
             </div>
           </div>
         </div>`;

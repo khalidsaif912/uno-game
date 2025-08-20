@@ -453,10 +453,27 @@
     const ALL_EMOJIS = ['🤠','😎','🥷','🤡','🦸','🦹','👽','🤖','👑','🦁','🐯','🐺','🐲','🦊','🐸','🐵','🦉','🐨','👨‍🚀','👩‍🚀','👨‍🎨','👩‍🎨','👨‍💻','👩‍💻','👨‍🔬','👩‍🔬'];
     const CARD_COLORS = ["#8e44ad", "#e67e22", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#16a085"];
 
-    const ALL_CHARACTERS = [
-      "images/uno1.png", "images/uno2.png", "images/uno3.png", "images/uno4.png", "images/uno5.png",
-      "images/uno6.png", "images/uno7.png", "images/uno8.png", "images/uno9.png", "images/uno10.png", "images/uno11.png"
-    ];
+    // دالة للحصول على قائمة الشخصيات المتاحة ديناميكياً
+    function getAvailableCharacter(usedChars) {
+        // نبدأ من uno1 ونستمر حتى نجد شخصية غير مستخدمة
+        let charIndex = 1;
+        let selectedChar = `images/uno${charIndex}.png`;
+        
+        // إذا كانت جميع الشخصيات مستخدمة حتى رقم معين، نختار عشوائياً
+        while (usedChars.includes(selectedChar)) {
+            charIndex++;
+            selectedChar = `images/uno${charIndex}.png`;
+            
+            // إذا وصلنا لرقم عالي، نختار عشوائياً من 1-1000
+            if (charIndex > 1000) {
+                charIndex = Math.floor(Math.random() * 1000) + 1;
+                selectedChar = `images/uno${charIndex}.png`;
+                break;
+            }
+        }
+        
+        return selectedChar;
+    }
 
     const makeId = () => Math.random().toString(36).slice(2, 8);
     const todayTag = () => new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).replace(/ /g,'').toUpperCase();
@@ -517,7 +534,7 @@
       // تحديد أيقونة الميدالية (ذهبية أم فضية)
       const medalIcon = (p.left >= 5) ? "🥇" : "🥈";
       
-      return `
+              return `
         <div class="card" data-player-id="${p.id}" style="background-color: ${hexToRgba(cardColor, 0.8)};">
           <div class="card-body">
             <div class="score-area left">
@@ -526,7 +543,7 @@
             </div>
             <div class="center-col">
               <div class="emoji">
-                <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
+                <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char" onerror="this.src='images/uno1.png'">
               </div>
             </div>
             <div class="score-area right">
@@ -673,13 +690,16 @@
             let usedColors = Object.values(players).map(p => p.color);
 
             for (const name of names) {
-                let availableChars = ALL_CHARACTERS.filter(c => !usedEmojis.includes(c));
-                if (availableChars.length === 0) availableChars = ALL_CHARACTERS;
-                const char = availableChars[Math.floor(Math.random() * availableChars.length)];
+                // الحصول على شخصية متاحة
+                const char = getAvailableCharacter(usedEmojis);
                 usedEmojis.push(char);
 
                 let availableColors = CARD_COLORS.filter(c => !usedColors.includes(c));
-                if (availableColors.length === 0) availableColors = CARD_COLORS;
+                if (availableColors.length === 0) {
+                    // إذا انتهت الألوان، نبدأ من جديد
+                    availableColors = [...CARD_COLORS];
+                    usedColors = []; // إعادة تعيين الألوان المستخدمة
+                }
                 const color = availableColors[0];
                 usedColors.push(color);
 

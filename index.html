@@ -97,11 +97,12 @@
       right: 20px;
     }
     .score-card {
-      background-color: rgba(0,0,0,0.6); border-radius: 12px; padding: 8px 12px;
+      background-color: rgba(255,255,255,0.9); border-radius: 12px; padding: 8px 12px;
       font-size: 24px; font-weight: 900; text-align: center; min-width: 50px;
-      border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transition: all 0.2s ease; position: relative;
       pointer-events: none;
+      color: #333;
     }
     
     .score-card:hover {
@@ -384,7 +385,7 @@
         };
     }
 
-    // دالة إنشاء بطاقة اللاعب - تصميم مطابق للصورة
+    // دالة إنشاء بطاقة اللاعب - ترتيب صحيح للميدالية والكأس
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
       // تحديد أيقونة الميدالية (ذهبية أم فضية)
@@ -397,7 +398,7 @@
           <div class="card-body">
             <div class="score-area left">
               <div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div>
-              <span class="score-icon">🏆</span>
+              <span class="score-icon">${medalIcon}</span>
             </div>
             <div class="center-col">
               <div class="emoji">
@@ -405,8 +406,8 @@
               </div>
             </div>
             <div class="score-area right">
-              <span class="score-icon">${medalIcon}</span>
               <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
+              <span class="score-icon">🏆</span>
             </div>
           </div>
           <div class="card-header">
@@ -642,12 +643,12 @@
                 // تحديد المنطقة: نصف البطاقة العلوي للزيادة، النصف السفلي للتقليل
                 const delta = clickY < cardHeight / 2 ? 1 : -1;
                 
-                // تصحيح المنطق للاتجاه RTL
+                // تحديد الجهة: يسار للميداليات، يمين للكؤوس
                 let side;
                 if (clickX < cardWidth / 2) {
-                    side = 'right'; // النصف الأيسر بصرياً = الكؤوس (right)
+                    side = 'left'; // الجهة اليسرى = الميداليات
                 } else {
-                    side = 'left'; // النصف الأيمن بصرياً = الميداليات (left)
+                    side = 'right'; // الجهة اليمنى = الكؤوس
                 }
                 
                 handleScoreUpdate(playerId, side, delta);

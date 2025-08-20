@@ -33,7 +33,7 @@
     .card {
       border-radius:16px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       position: relative; user-select: none; border: 1px solid rgba(255, 255, 255, 0.1);
-      min-height: 180px; display: flex; flex-direction: column; align-items: center;
+      min-height: 160px; display: flex; flex-direction: column; align-items: center;
     }
     
     .card-header {
@@ -43,6 +43,8 @@
       gap: 6px;
       width: 100%;
       margin-bottom: 8px;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      padding-bottom: 6px;
     }
     
     .player-name-section {
@@ -55,7 +57,12 @@
     }
     
     .game-icon {
-      font-size: 16px;
+      font-size: 20px;
+    }
+    
+    .score-icon {
+      font-size: 24px;
+      opacity: 0.8;
     }
     
     .card-body {
@@ -69,10 +76,17 @@
     
     .score-area { 
       display: flex; 
-      flex-direction: column;
       align-items: center; 
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
+    }
+    
+    .score-area.left {
+      flex-direction: row-reverse; /* الميدالية على اليمين، الرقم على اليسار */
+    }
+    
+    .score-area.right {
+      flex-direction: row; /* الكأس على اليسار، الرقم على اليمين */
     }
     .score-card {
       background-color: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 8px;
@@ -187,8 +201,8 @@
   
     /* صور اللاعبين (أفاتار) */
     .avatar {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       object-fit: cover;
       background: transparent;
       -webkit-touch-callout: none;
@@ -355,7 +369,7 @@
         };
     }
 
-    // دالة إنشاء بطاقة اللاعب - تخطيط مضغوط مع 4 كروت في الصف
+    // دالة إنشاء بطاقة اللاعب - أيقونات ثابتة مع أرقام متغيرة
     function playerCard(p, index){
       const cardColor = p.color || CARD_COLORS[index % CARD_COLORS.length];
       return `
@@ -367,7 +381,8 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="score-area">
+            <div class="score-area left">
+              <span class="score-icon">🥈</span>
               <div class="score-card" data-side="left" data-player-id="${p.id}">${p.left||0}</div>
             </div>
             <div class="center-col">
@@ -375,16 +390,9 @@
                 <img src="${p.character||'images/uno1.png'}" class="avatar" alt="char">
               </div>
             </div>
-            <div class="score-area">
+            <div class="score-area right">
               <div class="score-card" data-side="right" data-player-id="${p.id}">${p.right||0}</div>
-            </div>
-          </div>
-          <div class="badges">
-            <div class="medals-section">
-              <span>${getMedals(p.left)}</span>
-            </div>
-            <div class="cups-section">
-              <span>${"🏆".repeat(p.right||0)}</span>
+              <span class="score-icon">🏆</span>
             </div>
           </div>
         </div>`;
